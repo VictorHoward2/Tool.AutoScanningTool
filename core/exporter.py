@@ -26,4 +26,4 @@ def export_to_excel(data):
     else:
         with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name=sheet_name, index=False)
-    logger.info(f"📤 Xuất dữ liệu thành công ra {file_path}")
+    logger.info(f"Xuất dữ liệu thành công ra {file_path}")

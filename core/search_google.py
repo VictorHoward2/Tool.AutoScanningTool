@@ -51,6 +51,6 @@ class GoogleSearch:
     def search_all(self, query_dict):
         results = []
         for lang, query in query_dict.items():
-            logger.info(f"🔍 Searching [{lang}] query: {query}")
+            logger.info(f"[GOOGLE SEARCH] Searching [{lang}] query: {query}")
             results += self.search(query)
         return results

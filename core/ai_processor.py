@@ -1,7 +1,7 @@
 import re
 import requests
-# ai = AIProcessor()
-# results = ai.process_all(results, KEYWORDS)
+from core.logger import logger
+
 class AIProcessor:
     def strip_thoughts(self, text):
         # Dùng regex để loại bỏ đoạn <think>...</think>
@@ -117,5 +117,5 @@ class AIProcessor:
                     item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
                 
             except Exception as e:
-                print(f"[ERROR] Đã xảy ra lỗi: {e}")
+                logger.info(f"[ERROR] Đã xảy ra lỗi: {e}")
         return results

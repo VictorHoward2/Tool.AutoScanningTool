@@ -1,5 +1,6 @@
 import urllib3
 import requests
+from core.logger import logger
 from config.settings import QUERY, LANGUAGES
 
 class Translator:
@@ -15,7 +16,7 @@ class Translator:
             response.raise_for_status()  # Raise an exception for HTTP errors
             return data['responseData']['translatedText']
         except Exception as e:
-            return F"Fail to translate to {to_lang} query: {text}"
+            logger.info(f"🚀 [TRANSLATOR] Fail to translate to {to_lang} query: {text}")
         
     def make_queries(self, query, original_lang = "en"):
         queries = {}

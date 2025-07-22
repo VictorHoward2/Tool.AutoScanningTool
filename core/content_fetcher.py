@@ -1,5 +1,6 @@
 import traceback
 from bs4 import BeautifulSoup
+from core.logger import logger
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, WebDriverException
@@ -12,6 +13,15 @@ class ContentFetcher:
         lines = [line.strip() for line in soup.get_text(separator="\n").splitlines() if line.strip()]
         return '\n'.join(lines)
     
+    def remove_duplicate_links(self, array):
+        seen = set()
+        unique_arr = []
+        for item in array:
+            if item["link"] not in seen:
+                seen.add(item["link"])
+                unique_arr.append(item)
+        return unique_arr
+
     def get_content(self, results):
         options = Options()
         options.add_argument("--headless")
@@ -21,19 +31,19 @@ class ContentFetcher:
         for item in results:
             clean_text = ''
             try:
-                driver.get(item["link"])
+                driver.get(item['link'])
             except TimeoutException:
-                print(f"[TIMEOUT] Trang load quá lâu: {item["link"]}")
+                logger.info(f"[CONTENT FETCHER] Trang load quá lâu: {item['link']}")
                 try:
                     page_source = driver.page_source
                     clean_text = self.clean_html(page_source)
                 except Exception as e:
                     traceback.print_exc()
-                    print(f"[FAIL] Không thể lấy page_source sau timeout: {item["link"]}")
+                    logger.info(f"[CONTENT FETCHER] Không thể lấy page_source sau timeout: {item['link']}")
                     continue  # Bỏ qua nếu không lấy được gì
             except WebDriverException:
                 traceback.print_exc()
-                print(f"[ERROR] WebDriver gặp lỗi khi truy cập: {item["link"]}")
+                logger.info(f"[CONTENT FETCHER] WebDriver gặp lỗi khi truy cập: {item['link']}")
                 continue
             else:
                 # Nếu không timeout, xử lý bình thường
@@ -43,4 +53,4 @@ class ContentFetcher:
             item["content"] = clean_text
 
         driver.quit()
-        return results
+        return self.remove_duplicate_links(results)
