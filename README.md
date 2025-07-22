@@ -1,25 +1,34 @@
+## 📁 Dự án AutoScanningTool - Cấu trúc thư mục
+
 AutoScanningTool/
-├── main.py                          ← Điểm khởi đầu
-├── requirements.txt                 ← Danh sách thư viện
-├── README.md                        ← Hướng dẫn sử dụng
+├── main.py ← 🎯 Điểm khởi đầu chạy tool
+├── requirements.txt ← 📦 Danh sách thư viện cần cài
+├── README.md ← 📖 Hướng dẫn sử dụng
+│
 ├── config/
-│   └── settings.py                  ← API key, path, cấu hình hệ thống, Danh sách từ khóa, có thể update sau
-├── core/
-│   ├── search_google.py             ← Tìm kiếm trên Google
-│   ├── search_youtube.py           ← Tìm kiếm YouTube (sẽ thêm sau)
-│   ├── translator.py               ← Dịch ngôn ngữ
-│   ├── content_fetcher.py          ← Lấy nội dung web (Selenium, Requests)
-│   ├── ai_processor.py             ← Tóm tắt, đánh giá liên quan, trích xuất thông tin
-│   ├── exporter.py                 ← Xuất kết quả ra Excel
-│   └── logger.py                   ← Xử lý ghi log
-├── ui/
-│   ├── app_ui.py                   ← Giao diện PySide6 (sau này)
-│   └── components/                 ← Các component nhỏ cho GUI
-│       └── result_table.py
-├── data/
-│   ├── output/                     ← Chứa file Excel xuất ra
-│   └── logs/                       ← Chứa log file theo từng ngày
-├── assets/                         ← Icon, hình ảnh, tài nguyên GUI
-└── utils/
-    ├── time_utils.py              ← Các hàm thời gian
-    └── helpers.py                 ← Các hàm phụ trợ khác
+│ └── settings.py ← ⚙️ Cấu hình hệ thống (API key, path, từ khóa, có thể cập nhật sau)
+│
+├── core/ ← 🧠 Thành phần xử lý chính
+│ ├── search_google.py ← 🔍 Tìm kiếm nội dung qua Google
+│ ├── search_youtube.py ← 📺 Tìm kiếm YouTube (chức năng sẽ thêm sau)
+│ ├── translator.py ← 🌐 Dịch đa ngôn ngữ
+│ ├── content_fetcher.py ← 📄 Lấy nội dung từ web (dùng Selenium hoặc Requests)
+│ ├── ai_processor.py ← 🤖 Xử lý AI: tóm tắt, phân tích, trích xuất
+│ ├── exporter.py ← 📤 Xuất dữ liệu ra file Excel
+│ └── logger.py ← 📝 Ghi log hoạt động của hệ thống
+│
+├── ui/ ← 🖥️ Giao diện người dùng (PySide6)
+│ ├── assets/ ← 🎨 Icon, hình ảnh, tài nguyên cho GUI
+│ ├── app_ui.py ← Giao diện chính
+│ └── components/ ← 📦 Các thành phần con của GUI
+│ └── result_table.py ← 📊 Bảng hiển thị kết quả
+│
+├── data/ ← 💾 Dữ liệu sinh ra trong quá trình chạy
+│ ├── output/ ← 📁 Chứa các file Excel kết quả
+│ └── logs/ ← 📁 Chứa log theo ngày
+│
+├── utils/ ← 🧰 Các hàm tiện ích
+│ ├── time_utils.py ← ⏰ Xử lý thời gian, định dạng
+│ └──helpers.py ← 🧪 Các hàm phụ trợ dùng chung
+│
+└──────────────────────
