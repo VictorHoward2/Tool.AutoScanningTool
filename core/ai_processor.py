@@ -1,0 +1,121 @@
+import re
+import requests
+# ai = AIProcessor()
+# results = ai.process_all(results, KEYWORDS)
+class AIProcessor:
+    def strip_thoughts(self, text):
+        # Dùng regex để loại bỏ đoạn <think>...</think>
+        clean_text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL | re.IGNORECASE)
+
+        # Loại bỏ khoảng trắng đầu/cuối và dòng trống thừa
+        clean_text = clean_text.strip()
+        return clean_text
+    
+    def summarize_text(self, title, snippet, link, content, num_words = 50, model="gemma3:1b"):
+        prompt = (
+            f"Bạn là một chuyên gia đọc hiểu, phân tích, tóm tắt nội dung văn bản."
+            f"Tôi sẽ gửi cho bạn tiêu đề, đoạn trích nhỏ, link và nội dung (phần text trong trang web) của một trang web cùng với một từ khóa."
+            f"Bây giờ nhiệm vụ của bạn là: "
+            f"Hãy dựa vào những thông tin tôi gửi viết một bản tóm tắt bằng tiếng Việt về nội dung của trang web."
+            f"Viết ngắn gọn, dễ hiểu và đầy đủ ý chính, tránh lan man, tối đa {num_words} chữ."
+            f"Không tự bổ sung thông tin không được đề cập trong nội dung được giao.\n"
+            f"Tiêu đề trang web: {title} \n\n"
+            f"Đoạn trích nhỏ của trang web: {snippet}\n\n"
+            f"Link của trang web: {link}\n\n"
+            f"Nội dung (phần text trong trang web) của trang web: {content}\n\n"
+        )   
+        
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": model,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        
+        if response.status_code == 200:
+            return response.json()["response"]
+        else:
+            return f"Lỗi: {response.status_code} - {response.text}"
+        
+    def is_related(self, key, title, snippet, link, model="gemma3:1b"):
+        prompt = (
+            f"Tôi sẽ gửi cho bạn tiêu đề, đoạn trích nhỏ và link của một trang web cùng với một từ khóa. Bây giờ nhiệm vụ của bạn là: "
+            f"Trả lời chỉ một số duy nhất: \"1\" nếu từ những thông tin về trang web mà tôi gửi bạn đánh giá có nội dung liên quan nhiều đến từ khóa, không liên quan thì ghi \"0\", nếu bạn phân vân và không quyết định được thì ghi \"2\"."
+            f"Không thêm bất kỳ giải thích hay bình luận nào khác. Rõ ràng và ngắn gọn.\n\n"
+            f"Hãy cân nhắc thật kỹ bởi vì câu trả lời này của bạn rất quan trọng."
+            f"Tiêu đề trang web: {title} \n\n"
+            f"Đoạn trích nhỏ của trang web: {snippet}\n\n"
+            f"Link của trang web: {link}\n\n"
+            f"Từ khóa của lần này: {key}\n\n"
+        )
+
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": model,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        
+        if response.status_code == 200:
+            return response.json()["response"]
+        else:
+            return f"Lỗi: {response.status_code} - {response.text}"
+        
+    def extract_info (self,key, text, model="gemma3:1b"):
+        prompt = (
+            f"Bây giờ bạn là một AI có nhiệm vụ đọc hiểu nội dung của một trang web và trích xuất ra các thông tin cốt lõi liên quan đến từ khóa được cung cấp."
+            f"Yêu cầu:"
+            f"- Đọc nội dung được trích xuất từ HTML của một trang web tôi sắp gửi dưới đây. "
+            f"- Dựa trên từ khóa được cung cấp, trích xuất ra những thông tin có liên quan trực tiếp đến từ khóa đó, nếu như không có thông tin liên quan, ghi ngắn gọn \"Không có thông tin\"."
+            f"- Không tự bổ sung thông tin hay nói về những thông tin không được đề cập trong nội dung được giao."
+            f"- Nếu có thể, hãy trả lời bằng tiếng Việt và tuân theo các mục sau:\n"
+            f"    1. Tên thiết bị hoặc tên dòng máy liên quan đến từ khóa, càng nhiều thông tin chi tiết càng tốt."
+            f"    2. Tên công cụ (tool) hoặc tên phần mềm hoặc phương thức được dùng để thực hiện"
+            f"    3. Cách thức thực hiện (hướng dẫn ngắn gọn nếu có)"
+            f"    4. Điều kiện cần thiết hoặc lưu ý khi thực hiện"
+            f"    5. Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa"
+            f"Chỉ trích xuất các thông tin liên quan trực tiếp đến từ khóa. Nếu không có thông tin nào phù hợp thì hãy trả lời: \"Không tìm thấy thông tin liên quan\"."
+            f"Từ khóa của lần này: {key}\n"
+            f"Nội dung text trong trang web mà bạn cần xử lý: {text}"
+        )
+        
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": model,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        
+        if response.status_code == 200:
+            return response.json()["response"]
+        else:
+            return f"Lỗi: {response.status_code} - {response.text}"
+        
+    def process_all(self, results, key):
+        for item in results:
+            try:    
+                item["summarize"] = self.strip_thoughts(self.summarize_text(item["title"], item["snippet"], item["link"], item["content"]))
+                str_related = self.strip_thoughts(self.is_related(key, item["title"], item["snippet"], item["link"]))
+                try: 
+                    int_related = int(str_related)
+                except ValueError: 
+                    int_related = 2
+
+                if int_related==0: 
+                    item["related"] = "Không"
+                elif int_related==1: 
+                    item["related"] = "Có"
+                    item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
+                else:
+                    item["related"] = "N/A"
+                    item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
+                
+            except Exception as e:
+                print(f"[ERROR] Đã xảy ra lỗi: {e}")
+        return results
