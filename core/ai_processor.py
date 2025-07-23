@@ -98,18 +98,34 @@ class AIProcessor:
             return f"Lỗi: {response.status_code} - {response.text}"
         
     def process_all(self, results, key):
+        models = ["gemma3:1b", "granite3.2:2b", "qwen3:0.6b"]
+
         for item in results:
             try:    
                 item["summarize"] = self.strip_thoughts(self.summarize_text(item["title"], item["snippet"], item["link"], item["content"]))
-                str_related = self.strip_thoughts(self.is_related(key, item["title"], item["snippet"], item["link"]))
-                try: 
-                    int_related = int(str_related)
-                except ValueError: 
-                    int_related = 2
 
-                if int_related==0: 
+                # Lấy kết quả đánh giá từ các mô hình
+                opinions = []
+                for model in models:
+                    opinion = self.strip_thoughts(
+                        self.is_related(key, item["title"], item["snippet"], item["link"], model=model)
+                    )
+                    try:
+                        opinions.append(int(opinion))
+                    except ValueError:
+                        opinions.append(2)  # N/A
+                # Bình chọn
+                survey = [0, 0, 0]
+                for v in opinions:
+                    if 0 <= v <= 2:
+                        survey[v] += 1
+
+                valmax = survey.index(max(survey))
+                
+
+                if valmax==0: 
                     item["related"] = "Không"
-                elif int_related==1: 
+                elif valmax==1: 
                     item["related"] = "Có"
                     item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
                 else:
@@ -117,5 +133,5 @@ class AIProcessor:
                     item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
                 
             except Exception as e:
-                logger.info(f"[ERROR] Đã xảy ra lỗi: {e}")
+                logger.info(f"[AI PROCESS] Đã xảy ra lỗi: {e}")
         return results
