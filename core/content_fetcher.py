@@ -33,17 +33,17 @@ class ContentFetcher:
             try:
                 driver.get(item['link'])
             except TimeoutException:
-                logger.info(f"[CONTENT FETCHER] Trang load quá lâu: {item['link']}")
+                logger.warning(f"[CONTENT FETCHER] Trang load quá lâu: {item['link']}")
                 try:
                     page_source = driver.page_source
                     clean_text = self.clean_html(page_source)
                 except Exception as e:
+                    logger.error(f"[CONTENT FETCHER] Không thể lấy page_source sau timeout: {item['link']}")
                     traceback.print_exc()
-                    logger.info(f"[CONTENT FETCHER] Không thể lấy page_source sau timeout: {item['link']}")
                     continue  # Bỏ qua nếu không lấy được gì
             except WebDriverException:
+                logger.error(f"[CONTENT FETCHER] WebDriver gặp lỗi khi truy cập: {item['link']}")
                 traceback.print_exc()
-                logger.info(f"[CONTENT FETCHER] WebDriver gặp lỗi khi truy cập: {item['link']}")
                 continue
             else:
                 # Nếu không timeout, xử lý bình thường

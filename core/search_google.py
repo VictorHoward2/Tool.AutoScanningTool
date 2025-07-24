@@ -1,5 +1,6 @@
 import requests
-from config.settings import API_KEY_GOOGLE, SEARCH_ENGINE_ID, RESULTS_PER_REQUEST, NUM_RESULTS
+import traceback
+from config.settings import API_KEY_GOOGLE, URL_SEARCH_GOOGLE, SEARCH_ENGINE_ID_GOOGLE, RESULTS_PER_REQUEST_GOOGLE, NUM_RESULTS_GOOGLE
 from core.logger import logger
 
 '''
@@ -22,31 +23,33 @@ sort            : Sắp xếp theo ngày hoặc mức độ liên quan       : s
 '''
 class GoogleSearch:
     def search(self, query, date_restrict="m1"):
-        all_results = []
-        for start in range(1, NUM_RESULTS, RESULTS_PER_REQUEST):
+        results = []
+        for start in range(1, NUM_RESULTS_GOOGLE, RESULTS_PER_REQUEST_GOOGLE):
             params = {
                 "key": API_KEY_GOOGLE,
-                "cx": SEARCH_ENGINE_ID,
+                "cx": SEARCH_ENGINE_ID_GOOGLE,
                 "q": query,
-                "num": RESULTS_PER_REQUEST, # Google giới hạn tối đa 10/lần
+                "num": RESULTS_PER_REQUEST_GOOGLE, # Google giới hạn tối đa 10/lần
                 "start": start,
                 "dateRestrict": date_restrict,
             }
             try:
-                r = requests.get("https://www.googleapis.com/customsearch/v1", params=params, timeout=10)
+                r = requests.get(URL_SEARCH_GOOGLE, params=params, timeout=10)
                 if r.ok:
                     items = r.json().get("items", [])
                     for item in items:
-                        all_results.append({
+                        results.append({
                             "title": item.get("title", ""),
                             "link": item.get("link", ""),
                             "snippet": item.get("snippet", "")
                         })
                 else:
-                    logger.warning(f"Google API error: {r.status_code}")
+                    logger.error(f"[GOOGLE SEARCH] API error: {r.status_code}")
+                    traceback.print_exc()
             except Exception as e:
-                logger.error(f"GoogleSearch Exception: {e}")
-        return all_results
+                logger.error(f"[GOOGLE SEARCH] Exception: {e}")
+                traceback.print_exc()
+        return results
 
     def search_all(self, query_dict):
         results = []

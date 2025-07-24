@@ -5,7 +5,7 @@ from core.logger import logger
 
 # export_to_excel(results)
 
-def export_to_excel(data):
+def export_to_excel(data, sheetname):
     for item in data:
         if 'content' in item:
             del item['content']
@@ -13,7 +13,7 @@ def export_to_excel(data):
         os.makedirs(OUTPUT_PATH)
 
     file_path = os.path.join(OUTPUT_PATH, f"results_{TODAY}.xlsx")
-    sheet_name = f'google_{TODAY}'
+    sheet_name = f'{sheetname}_{TODAY}'
     
     df = pd.DataFrame(data)
     
