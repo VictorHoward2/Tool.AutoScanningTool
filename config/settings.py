@@ -9,8 +9,10 @@ PUBLISHED_TO = get_previous_date(day=0)
 OUTPUT_PATH = os.path.join(os.getcwd(), 'data/output')
 LOG_DIR = os.path.join(os.getcwd(), 'data/logs')
 LANGUAGES = ["en", "es", "fr", "de", "pt", "th"]
+TIMEOUT = 10
 DEFAULT_MODEL = "gemma3:1b"
-AI_MODELS = ["gemma3:1b", "granite3.2:2b", "qwen3:0.6b"]
+# AI_MODELS = ["gemma3:1b", "granite3.2:2b", "qwen3:0.6b", "deepseek-r1:1.5b", "llama3.2:1b"]
+AI_MODELS = ["gemma3:1b"]
 NUMBER_WORDS_SUMMARIZE = 50
 KEYWORDS = "Network Unlock of Samsung smartphones" # các thông tin muốn trích xuất
 QUERY = 'network unlock "samsung"'  #default: EN

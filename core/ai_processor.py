@@ -96,10 +96,11 @@ class AIProcessor:
             return f"Lỗi: {response.status_code} - {response.text}"
         
     def extract_info (self, key, text, model=DEFAULT_MODEL):
+        if text=="": return ""
         prompt = (
-            f"Bây giờ bạn là một AI có nhiệm vụ đọc hiểu nội dung của một trang web và trích xuất ra các thông tin cốt lõi liên quan đến từ khóa được cung cấp."
+            f"Bây giờ bạn là một AI có nhiệm vụ đọc hiểu nội dung mà tôi gửi và trích xuất ra các thông tin cốt lõi liên quan đến từ khóa được cung cấp."
             f"Yêu cầu:"
-            f"- Đọc nội dung được trích xuất từ HTML của một trang web tôi sắp gửi dưới đây. "
+            f"- Đọc nội dung mà tôi sắp gửi dưới đây, nội dung có thể chứa nhiều thông tin nhiễu, trình tự sắp xếp có thể lộn xộn. "
             f"- Dựa trên từ khóa được cung cấp, trích xuất ra những thông tin có liên quan trực tiếp đến từ khóa đó, nếu như không có thông tin liên quan, ghi ngắn gọn \"Không có thông tin\"."
             f"- Không tự bổ sung thông tin hay nói về những thông tin không được đề cập trong nội dung được giao."
             f"- Nếu có thể, hãy trả lời bằng tiếng Việt và tuân theo các mục sau:\n"
@@ -128,7 +129,9 @@ class AIProcessor:
             return f"Lỗi: {response.status_code} - {response.text}"
         
     def process_ai_google(self, results, key):
-        for item in results:
+        total = len(results)
+        for idx, item in enumerate(results, 1):
+            logger.info(f"[AI PROCESS] [{idx}/{total}] Đang xử lý item: {item.get('title', '')}")
             try:    
                 item["summarize"] = self.strip_thoughts(self.summarize_content(item["title"], item["snippet"], item["link"], item["content"]))
 
@@ -166,7 +169,9 @@ class AIProcessor:
         return results
     
     def process_ai_youtube(self, results, key):
-        for item in results:
+        total = len(results)
+        for idx, item in enumerate(results, 1):
+            logger.info(f"[AI PROCESS] [{idx}/{total}] Đang xử lý item: {item.get('title', '')}")
             try:    
                 item["summarize"] = self.strip_thoughts(self.summarize_description(item["title"], item["snippet"], item["link"]))
 

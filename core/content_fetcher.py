@@ -4,6 +4,7 @@ from core.logger import logger
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, WebDriverException
+from config.settings import TIMEOUT
 
 class ContentFetcher:
     def clean_html(self, page_source):
@@ -26,7 +27,7 @@ class ContentFetcher:
         options = Options()
         options.add_argument("--headless")
         driver = webdriver.Chrome(options=options)
-        driver.set_page_load_timeout(10)
+        driver.set_page_load_timeout(TIMEOUT)
 
         for item in results:
             clean_text = ''

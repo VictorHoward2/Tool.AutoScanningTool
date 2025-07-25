@@ -2,7 +2,7 @@ import requests
 import traceback
 import urllib.parse
 from core.logger import logger
-from config.settings import API_KEY_YOUTUBE, URL_SEARCH_YOUTUBE, URL_LINK_YOUTUBE, URL_INFO_VIDEO, PUBLISHED_FROM, PUBLISHED_TO
+from config.settings import API_KEY_YOUTUBE, URL_SEARCH_YOUTUBE, URL_LINK_YOUTUBE, URL_INFO_VIDEO, PUBLISHED_FROM, PUBLISHED_TO, TIMEOUT
 
 class YoutubeSearch:
     def fetch_video_info(self, videoId):
@@ -13,7 +13,7 @@ class YoutubeSearch:
                 "key": API_KEY_YOUTUBE
             }
             param_string = urllib.parse.urlencode(params)
-            r = requests.get(f"{URL_INFO_VIDEO}?{param_string}")
+            r = requests.get(f"{URL_INFO_VIDEO}?{param_string}", timeout=TIMEOUT)
             if r.ok:
                 return r.json()
             else:
@@ -27,14 +27,15 @@ class YoutubeSearch:
     def search(self, query, before = PUBLISHED_FROM, after = PUBLISHED_TO, region_code=""):
         results = []
         
+        """
         params = {
             'q': query,
             "part": "snippet",
             "type": "video",
             "key": API_KEY_YOUTUBE
         }
-
         """
+
         params = {
             'q': query,
             "part": "snippet",
@@ -45,13 +46,12 @@ class YoutubeSearch:
             "maxResults": 50,
             "key": API_KEY_YOUTUBE
         }
-        """
         
         if region_code != "":
             params["regionCode"] = region_code
         try:
             param_string = urllib.parse.urlencode(params)
-            r = requests.get(f"{URL_SEARCH_YOUTUBE}?{param_string}")
+            r = requests.get(f"{URL_SEARCH_YOUTUBE}?{param_string}", timeout=TIMEOUT)
             if r.ok:
                 items = r.json().get("items", [])
                 for item in items:

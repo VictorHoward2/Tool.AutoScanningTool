@@ -2,8 +2,7 @@ import urllib3
 import requests
 import traceback
 from core.logger import logger
-from config.settings import QUERY, LANGUAGES
-
+from config.settings import LANGUAGES, TIMEOUT
 class Translator:
     def make_url_trans(self, text, from_lang, to_lang):
         return f"https://api.mymemory.translated.net/get?q={text}&langpair={from_lang}%7C{to_lang}"
@@ -12,7 +11,7 @@ class Translator:
         try: 
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             url = self.make_url_trans(text, 'en', to_lang)
-            response = requests.get(url, verify=False)
+            response = requests.get(url, verify=False, timeout=TIMEOUT)
             data = response.json()
             response.raise_for_status()  # Raise an exception for HTTP errors
             return data['responseData']['translatedText']

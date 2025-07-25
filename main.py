@@ -33,7 +33,9 @@ def main():
 
     # AI process
     logger.info("[MAIN] Giai đoạn 4: AI process")
+    logger.info("[MAIN] Giai đoạn 4.1: AI process for Google")
     results_google = ai.process_ai_google(results_google, KEYWORDS)
+    logger.info("[MAIN] Giai đoạn 4.2: AI process for Youtube")
     results_youtube = ai.process_ai_youtube(results_youtube, KEYWORDS)
 
     # Export

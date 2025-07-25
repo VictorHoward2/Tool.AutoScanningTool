@@ -1,6 +1,6 @@
 # 🤖 AutoScanningTool
 
-**AutoScanningTool** là một công cụ tự động hóa quy trình tìm kiếm thông tin trên internet, trích xuất nội dung, xử lý bằng AI (tóm tắt, phân tích), dịch thuật và xuất ra file Excel. Công cụ có giao diện người dùng (GUI) thân thiện được xây dựng bằng PySide6.
+**AutoScanningTool** là một công cụ tự động hóa quy trình tìm kiếm thông tin trên internet, trích xuất nội dung, xử lý bằng AI (tóm tắt, phân tích), dịch thuật và xuất ra file Excel. 
 
 ---
 
@@ -46,10 +46,15 @@ AutoScanningTool/
     ```bash
     pip install -r requirements.txt
     ```
-2. Chạy tool:
+2. Cài đặt Ollama, tải về các model AI mong muốn và chạy Ollama serve:
+    ```bash
+    ollama serve
+    ```
+3. Cấu hình lại file settings.py theo đúng nhu cầu.
+4. Chạy tool:
     ```bash
     python main.py
     ```
 
 ## 📌 Ghi chú
-- Đảm bảo đã cấu hình file `settings.py` trước khi chạy tool.
+- Đảm bảo đã cấu hình file `settings.py` trước khi chạy tool, các API mặc định có thể cũ và không họat động nữa.

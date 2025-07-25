@@ -1,6 +1,6 @@
 import requests
 import traceback
-from config.settings import API_KEY_GOOGLE, URL_SEARCH_GOOGLE, SEARCH_ENGINE_ID_GOOGLE, RESULTS_PER_REQUEST_GOOGLE, NUM_RESULTS_GOOGLE
+from config.settings import API_KEY_GOOGLE, URL_SEARCH_GOOGLE, SEARCH_ENGINE_ID_GOOGLE, RESULTS_PER_REQUEST_GOOGLE, NUM_RESULTS_GOOGLE, TIMEOUT
 from core.logger import logger
 
 '''
@@ -22,7 +22,7 @@ rights          : Lọc theo giấy phép bản quyền                  : right
 sort            : Sắp xếp theo ngày hoặc mức độ liên quan       : sort=date - sắp xếp theo ngày | mặc định là dộ liên quan 
 '''
 class GoogleSearch:
-    def search(self, query, date_restrict="m1"):
+    def search(self, query, date_restrict="d7"):
         results = []
         for start in range(1, NUM_RESULTS_GOOGLE, RESULTS_PER_REQUEST_GOOGLE):
             params = {
@@ -34,7 +34,7 @@ class GoogleSearch:
                 "dateRestrict": date_restrict,
             }
             try:
-                r = requests.get(URL_SEARCH_GOOGLE, params=params, timeout=10)
+                r = requests.get(URL_SEARCH_GOOGLE, params=params, timeout=TIMEOUT)
                 if r.ok:
                     items = r.json().get("items", [])
                     for item in items:
