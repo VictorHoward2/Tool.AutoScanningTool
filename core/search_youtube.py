@@ -2,8 +2,7 @@ import requests
 import traceback
 import urllib.parse
 from core.logger import logger
-from config.settings import API_KEY_YOUTUBE, URL_SEARCH_YOUTUBE, URL_LINK_YOUTUBE, URL_INFO_VIDEO, PUBLISHED_FROM, PUBLISHED_TO, TIMEOUT
-
+from config.settings import *
 class YoutubeSearch:
     def fetch_video_info(self, videoId):
         try:
@@ -73,6 +72,8 @@ class YoutubeSearch:
 
     def search_all(self, query_dict):
         results = []
+        if not IS_YOUTUBE:
+            return results
         for lang, query in query_dict.items():
             logger.info(f"[YOUTUBE SEARCH] Searching [{lang}] query: {query}")
             results += self.search(query)

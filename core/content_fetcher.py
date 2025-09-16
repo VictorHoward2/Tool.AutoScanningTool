@@ -24,6 +24,10 @@ class ContentFetcher:
         return unique_arr
 
     def get_content(self, results):
+
+        if not results:
+            return results
+
         options = Options()
         options.add_argument("--headless")
         driver = webdriver.Chrome(options=options)

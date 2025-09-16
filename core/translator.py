@@ -2,7 +2,7 @@ import urllib3
 import requests
 import traceback
 from core.logger import logger
-from config.settings import LANGUAGES, TIMEOUT
+from config.settings import *
 class Translator:
     def make_url_trans(self, text, from_lang, to_lang):
         return f"https://api.mymemory.translated.net/get?q={text}&langpair={from_lang}%7C{to_lang}"
@@ -22,6 +22,10 @@ class Translator:
     def make_queries(self, query, original_lang = "en"):
         queries = {}
         queries[original_lang] = query
+
+        if not IS_TRANSLATE:
+            return queries
+        
         for lang in LANGUAGES:
             if lang == original_lang: continue
             queries[lang] = self.translate_using_api(query, lang)

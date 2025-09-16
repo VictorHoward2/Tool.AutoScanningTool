@@ -2,7 +2,7 @@ import re
 import requests
 import traceback
 from core.logger import logger
-from config.settings import AI_MODELS, DEFAULT_MODEL, NUMBER_WORDS_SUMMARIZE
+from config.settings import AI_MODELS, DEFAULT_MODEL, IS_EXTRACT_GOOGLE, IS_SUMMARIZE_GOOGLE, IS_SUMMARIZE_YOUTUBE, NUMBER_WORDS_SUMMARIZE
 
 class AIProcessor:
     def strip_thoughts(self, text):
@@ -130,38 +130,42 @@ class AIProcessor:
         
     def process_ai_google(self, results, key):
         total = len(results)
+        if not total:
+            return results
         for idx, item in enumerate(results, 1):
             logger.info(f"[AI PROCESS] [{idx}/{total}] Đang xử lý item: {item.get('title', '')}")
             try:    
-                item["summarize"] = self.strip_thoughts(self.summarize_content(item["title"], item["snippet"], item["link"], item["content"]))
+                if IS_SUMMARIZE_GOOGLE:
+                    item["summarize"] = self.strip_thoughts(self.summarize_content(item["title"], item["snippet"], item["link"], item["content"]))
 
                 # Lấy kết quả đánh giá từ các mô hình
-                opinions = []
-                for model in AI_MODELS:
-                    opinion = self.strip_thoughts(
-                        self.is_related(key, item["title"], item["snippet"], item["link"], model=model)
-                    )
-                    try:
-                        opinions.append(int(opinion))
-                    except ValueError:
-                        opinions.append(2)  # N/A
-                # Bình chọn
-                survey = [0, 0, 0]
-                for v in opinions:
-                    if 0 <= v <= 2:
-                        survey[v] += 1
+                if IS_EXTRACT_GOOGLE:
+                    opinions = []
+                    for model in AI_MODELS:
+                        opinion = self.strip_thoughts(
+                            self.is_related(key, item["title"], item["snippet"], item["link"], model=model)
+                        )
+                        try:
+                            opinions.append(int(opinion))
+                        except ValueError:
+                            opinions.append(2)  # N/A
+                    # Bình chọn
+                    survey = [0, 0, 0]
+                    for v in opinions:
+                        if 0 <= v <= 2:
+                            survey[v] += 1
 
-                valmax = survey.index(max(survey))
-                
+                    valmax = survey.index(max(survey))
+                    
 
-                if valmax==0: 
-                    item["related"] = "Không"
-                elif valmax==1: 
-                    item["related"] = "Có"
-                    item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
-                else:
-                    item["related"] = "N/A"
-                    item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
+                    if valmax==0: 
+                        item["related"] = "Không"
+                    elif valmax==1: 
+                        item["related"] = "Có"
+                        item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
+                    else:
+                        item["related"] = "N/A"
+                        item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
                 
             except Exception as e:
                 logger.error(f"[AI PROCESS] Đã xảy ra lỗi: {e}")
@@ -170,38 +174,42 @@ class AIProcessor:
     
     def process_ai_youtube(self, results, key):
         total = len(results)
+        if not total:
+            return results
         for idx, item in enumerate(results, 1):
             logger.info(f"[AI PROCESS] [{idx}/{total}] Đang xử lý item: {item.get('title', '')}")
             try:    
-                item["summarize"] = self.strip_thoughts(self.summarize_description(item["title"], item["snippet"], item["link"]))
+                if IS_SUMMARIZE_YOUTUBE:
+                    item["summarize"] = self.strip_thoughts(self.summarize_description(item["title"], item["snippet"], item["link"]))
 
                 # Lấy kết quả đánh giá từ các mô hình
-                opinions = []
-                for model in AI_MODELS:
-                    opinion = self.strip_thoughts(
-                        self.is_related(key, item["title"], item["snippet"], item["link"], model=model)
-                    )
-                    try:
-                        opinions.append(int(opinion))
-                    except ValueError:
-                        opinions.append(2)  # N/A
-                # Bình chọn
-                survey = [0, 0, 0]
-                for v in opinions:
-                    if 0 <= v <= 2:
-                        survey[v] += 1
+                if IS_EXTRACT_GOOGLE:
+                    opinions = []
+                    for model in AI_MODELS:
+                        opinion = self.strip_thoughts(
+                            self.is_related(key, item["title"], item["snippet"], item["link"], model=model)
+                        )
+                        try:
+                            opinions.append(int(opinion))
+                        except ValueError:
+                            opinions.append(2)  # N/A
+                    # Bình chọn
+                    survey = [0, 0, 0]
+                    for v in opinions:
+                        if 0 <= v <= 2:
+                            survey[v] += 1
 
-                valmax = survey.index(max(survey))
-                
+                    valmax = survey.index(max(survey))
+                    
 
-                if valmax==0: 
-                    item["related"] = "Không"
-                elif valmax==1: 
-                    item["related"] = "Có"
-                    item["extract"] = self.strip_thoughts(self.extract_info(key, item["snippet"]))
-                else:
-                    item["related"] = "N/A"
-                    item["extract"] = self.strip_thoughts(self.extract_info(key, item["snippet"]))
+                    if valmax==0: 
+                        item["related"] = "Không"
+                    elif valmax==1: 
+                        item["related"] = "Có"
+                        item["extract"] = self.strip_thoughts(self.extract_info(key, item["snippet"]))
+                    else:
+                        item["related"] = "N/A"
+                        item["extract"] = self.strip_thoughts(self.extract_info(key, item["snippet"]))
                 
             except Exception as e:
                 logger.error(f"[AI PROCESS] Đã xảy ra lỗi: {e}")

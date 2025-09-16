@@ -1,6 +1,6 @@
 import requests
 import traceback
-from config.settings import API_KEY_GOOGLE, URL_SEARCH_GOOGLE, SEARCH_ENGINE_ID_GOOGLE, RESULTS_PER_REQUEST_GOOGLE, NUM_RESULTS_GOOGLE, TIMEOUT
+from config.settings import *
 from core.logger import logger
 
 '''
@@ -22,7 +22,7 @@ rights          : Lọc theo giấy phép bản quyền                  : right
 sort            : Sắp xếp theo ngày hoặc mức độ liên quan       : sort=date - sắp xếp theo ngày | mặc định là dộ liên quan 
 '''
 class GoogleSearch:
-    def search(self, query, date_restrict="d7"):
+    def search(self, query, date_restrict=f"d{DURATION}"):
         results = []
         for start in range(1, NUM_RESULTS_GOOGLE, RESULTS_PER_REQUEST_GOOGLE):
             params = {
@@ -53,6 +53,8 @@ class GoogleSearch:
 
     def search_all(self, query_dict):
         results = []
+        if not IS_GOOGLE:
+            return results
         for lang, query in query_dict.items():
             logger.info(f"[GOOGLE SEARCH] Searching [{lang}] query: {query}")
             results += self.search(query)
