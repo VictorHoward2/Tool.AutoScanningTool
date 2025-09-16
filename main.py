@@ -40,8 +40,15 @@ def main():
 
     # Fetch content
     logger.info("[MAIN] Phase 3: Fetch content")
+    index = 1
     if IS_GOOGLE:
+        logger.info(f"[MAIN] Phase 3.{index} Google")
+        index += 1
         results_google = fetcher.get_content(results_google)
+    if IS_RSS:
+        logger.info(f"[MAIN] Phase 3.{index} RSS")
+        index += 1
+        results_rss = fetcher.get_content(results_rss)
 
     # AI process
     logger.info("[MAIN] Phase 4: AI process")
