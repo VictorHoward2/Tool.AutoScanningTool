@@ -1,6 +1,6 @@
 import logging
 import os
-from config.settings import LOG_DIR, TODAY
+from config.settings import *
 
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)

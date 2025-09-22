@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from config.settings import OUTPUT_PATH, TODAY
+from config.settings import *
 from core.logger import logger
 
 # export_to_excel(results)

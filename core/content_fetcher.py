@@ -2,7 +2,7 @@ import traceback
 import cloudscraper
 from bs4 import BeautifulSoup
 from core.logger import logger
-from config.settings import TIMEOUT
+from config.settings import *
 
 class ContentFetcher:
     def __init__(self):

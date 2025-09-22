@@ -27,7 +27,7 @@ class RSSSearch:
                         "title": entry.get("title"),
                         "link": entry.get("link"),
                         "published": pub.isoformat(),
-                        "summary": entry.get("summary", "")
+                        "snippet": entry.get("summary", "")
                     })
 
         return recent_posts

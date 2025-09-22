@@ -56,11 +56,15 @@ def main():
     if IS_GOOGLE:
         logger.info(f"[MAIN] Phase 4.{index}: AI process for Google")
         index += 1
-        results_google = ai.process_ai_google(results_google, KEYWORDS)
+        results_google = ai.process_ai_article(results_google, TOPIC_KEYWORD, GOOGLE)
+    if IS_RSS:
+        logger.info(f"[MAIN] Phase 4.{index}: AI process for RSS")
+        index += 1
+        results_rss = ai.process_ai_article(results_rss, TOPIC_KEYWORD, RSS)
     if IS_YOUTUBE:
         logger.info(f"[MAIN] Phase 4.{index}: AI process for Youtube")
         index += 1
-        results_youtube = ai.process_ai_youtube(results_youtube, KEYWORDS)
+        results_youtube = ai.process_ai_video(results_youtube, TOPIC_KEYWORD)
 
     # Export
     logger.info("[MAIN] Phase 5: Export")

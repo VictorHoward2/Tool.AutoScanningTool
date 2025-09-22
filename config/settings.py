@@ -5,19 +5,29 @@ from utils.time_utils import get_previous_date
 # Modules settings
 IS_TRANSLATE = False
 IS_GOOGLE = False
-IS_YOUTUBE = False
 IS_SUMMARIZE_GOOGLE = False
 IS_EXTRACT_GOOGLE = False
+IS_YOUTUBE = False
 IS_SUMMARIZE_YOUTUBE = False
 IS_EXTRACT_YOUTUBE = False
 IS_RSS = True
+IS_SUMMARIZE_RSS = True
+IS_EXTRACT_RSS = True
 
 # Scan settings
-KEYWORDS = "" # các thông tin muốn trích xuất
+TOPIC_KEYWORD = "LLM" # các thông tin muốn trích xuất
 QUERY = ''  #default: EN
+# DEMANDS = [
+#     "Tên thiết bị hoặc tên dòng máy liên quan đến từ khóa, càng nhiều thông tin chi tiết càng tốt",
+#     "Tên công cụ (tool) hoặc tên phần mềm hoặc phương thức được dùng để thực hiện",
+#     "Cách thức thực hiện (hướng dẫn ngắn gọn nếu có)",
+#     "Điều kiện cần thiết hoặc lưu ý khi thực hiện",
+#     "Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa",
+# ]
+DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 30 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 7 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 PUBLISHED_FROM = get_previous_date(day=DURATION)
 PUBLISHED_TO = get_previous_date(day=0)
@@ -49,6 +59,12 @@ URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 
 # RSS
 RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.keysight.com/blogs/rss/feed.xml", "https://www.infostealers.com/learn-info-stealers/feed/"]  # Thêm nhiều RSS feed nếu cần
+
+# CONSTANTS
+GOOGLE = "google"
+YOUTUBE = "youtube"
+RSS = "rss"
+
 
 
 
