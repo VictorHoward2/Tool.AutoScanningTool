@@ -170,7 +170,7 @@ class AIProcessor:
                         item["related"] = "Có"
                         item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
                     else:
-                        item["related"] = "N/A"
+                        item["related"] = "Không biết"
                         item["extract"] = self.strip_thoughts(self.extract_info(key, item["content"]))
                 
             except Exception as e:
@@ -208,7 +208,7 @@ class AIProcessor:
                     valmax = survey.index(max(survey))
                     
 
-                    if valmax==0: 
+                    if survey[0] > survey [1] and survey[0] > survey[2]:
                         item["related"] = "Không"
                     elif valmax==1: 
                         item["related"] = "Có"

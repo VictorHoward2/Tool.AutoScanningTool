@@ -15,6 +15,8 @@ def export_to_excel(data, sheetname):
     file_path = os.path.join(OUTPUT_PATH, f"results_{TODAY}.xlsx")
     sheet_name = f'{sheetname}_{TODAY}'
     
+    data = [{k.upper(): v for k, v in item.items()} for item in data]
+    
     df = pd.DataFrame(data)
     
     # Check file exist, delete old sheet before add new sheet

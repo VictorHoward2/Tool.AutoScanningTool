@@ -27,7 +27,7 @@ QUERY = ''  #default: EN
 DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 7 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 60 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 PUBLISHED_FROM = get_previous_date(day=DURATION)
 PUBLISHED_TO = get_previous_date(day=0)
@@ -39,10 +39,10 @@ LANGUAGES = ["en", "es", "fr", "de", "pt", "th"]
 TIMEOUT = 10
 
 # AI settings
-DEFAULT_MODEL = "gemma3:1b"
+DEFAULT_MODEL = "gemma3:270m"
 # AI_MODELS = ["gemma3:1b", "granite3.2:2b", "qwen3:0.6b", "deepseek-r1:1.5b", "llama3.2:1b"]
-AI_MODELS = ["gemma3:1b"]
-NUMBER_WORDS_SUMMARIZE = 50
+AI_MODELS = ["llama3.1:8b"]
+NUMBER_WORDS_SUMMARIZE = 200
 
 # Google
 API_KEY_GOOGLE = "AIzaSyDBUcnY9yG5ZRK0WzhJQLuGW-j6BOcwBaY"
