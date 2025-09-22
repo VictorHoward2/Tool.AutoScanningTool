@@ -11,8 +11,8 @@ IS_YOUTUBE = False
 IS_SUMMARIZE_YOUTUBE = False
 IS_EXTRACT_YOUTUBE = False
 IS_RSS = True
-IS_SUMMARIZE_RSS = True
-IS_EXTRACT_RSS = True
+IS_SUMMARIZE_RSS = False
+IS_EXTRACT_RSS = False
 
 # Scan settings
 TOPIC_KEYWORD = "LLM" # các thông tin muốn trích xuất
@@ -27,7 +27,7 @@ QUERY = ''  #default: EN
 DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 60 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 7 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 PUBLISHED_FROM = get_previous_date(day=DURATION)
 PUBLISHED_TO = get_previous_date(day=0)
@@ -61,9 +61,9 @@ URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.keysight.com/blogs/rss/feed.xml", "https://www.infostealers.com/learn-info-stealers/feed/"]  # Thêm nhiều RSS feed nếu cần
 
 # CONSTANTS
-GOOGLE = "google"
-YOUTUBE = "youtube"
-RSS = "rss"
+GOOGLE = "Google"
+YOUTUBE = "Youtube"
+RSS = "RSS"
 
 
 

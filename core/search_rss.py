@@ -2,6 +2,7 @@ import feedparser
 from datetime import datetime, timedelta, timezone
 import cloudscraper
 from config.settings import *
+from core.translator import Translator
 
 class RSSSearch:
     def __init__(self):
@@ -27,7 +28,8 @@ class RSSSearch:
                         "title": entry.get("title"),
                         "link": entry.get("link"),
                         "published": pub.isoformat(),
-                        "snippet": entry.get("summary", "")
+                        "snippet": entry.get("summary", ""),
+                        "vietsub": Translator().translate_using_api(entry.get("summary", ""), "vi") if entry.get("summary", "") else ""
                     })
 
         return recent_posts

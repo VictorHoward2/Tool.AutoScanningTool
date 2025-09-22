@@ -5,7 +5,7 @@ from core.translator import Translator
 from core.content_fetcher import ContentFetcher
 from core.ai_processor import AIProcessor
 from core.search_rss import RSSSearch
-from core.exporter import export_to_excel
+from core.exporter import *
 from core.logger import logger
 
 def main():
@@ -69,11 +69,12 @@ def main():
     # Export
     logger.info("[MAIN] Phase 5: Export")
     if IS_GOOGLE:
-        export_to_excel(results_google, "Google")
+        export_to_excel(results_google, GOOGLE)
     if IS_YOUTUBE:
-        export_to_excel(results_youtube, "Youtube")
+        export_to_excel(results_youtube, YOUTUBE)
     if IS_RSS:
-        export_to_excel(results_rss, "RSS")
+        export_to_excel(results_rss, RSS)
+        export_to_html(results_rss, RSS)
 
     logger.info("[MAIN] Scan completed!")
 
