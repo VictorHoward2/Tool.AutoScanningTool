@@ -1,5 +1,10 @@
-requests
+os
+html
 urllib3
+logging
+datetime
+requests
+traceback
 beautifulsoup4
 selenium
 openpyxl
