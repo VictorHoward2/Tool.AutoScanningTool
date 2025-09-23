@@ -92,6 +92,24 @@ def export_to_html(data, service, output_path="output"):
     line-height: 1.6;
     white-space: pre-wrap;
     }
+    .translation-label {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #555;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    }
+    .translation {
+    background: #f9f9f9;
+    padding: 12px;
+    border-left: 4px solid #1a73e8;
+    border-radius: 6px;
+    line-height: 1.6;
+    font-style: italic;
+    color: #444;
+    white-space: pre-wrap;
+    }
+
     """
 
     # Sinh nội dung từng article
@@ -109,8 +127,8 @@ def export_to_html(data, service, output_path="output"):
         <h2>{idx}. {title_html}</h2>
         <div class="meta">{published}</div>
         <p class="snippet">{snippet}</p>
-        <p> Dịch tiếng Việt:</p>
-        <p class="snippet">{vietsub}</p>
+        <p class="translation-label"> Dịch tiếng Việt:</p>
+        <p class="translation">{vietsub}</p>
         </article>
         """
         articles_html += article_html

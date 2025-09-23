@@ -1,8 +1,10 @@
 import feedparser
+import html
 from datetime import datetime, timedelta, timezone
 import cloudscraper
 from config.settings import *
 from core.translator import Translator
+from bs4 import BeautifulSoup
 
 class RSSSearch:
     def __init__(self):
@@ -13,7 +15,7 @@ class RSSSearch:
         for rss_url in RSS_URL:
             response = self.scraper.get(rss_url)
             feed = feedparser.parse(response.text)
-            one_month_ago = datetime.now(timezone.utc) - timedelta(days=days)
+            duration = datetime.now(timezone.utc) - timedelta(days=days)
 
             for entry in feed.entries:
                 if hasattr(entry, "published_parsed"):
@@ -23,13 +25,13 @@ class RSSSearch:
                 else:
                     continue
 
-                if pub >= one_month_ago:
+                if pub >= duration:
                     recent_posts.append({
                         "title": entry.get("title"),
                         "link": entry.get("link"),
                         "published": pub.isoformat(),
                         "snippet": entry.get("summary", ""),
-                        "vietsub": Translator().translate_using_api(entry.get("summary", ""), "vi") if entry.get("summary", "") else ""
+                        "vietsub": Translator().translate_using_api(text=html.escape(BeautifulSoup(entry.get("summary", ""), "html.parser").get_text()))
                     })
 
         return recent_posts

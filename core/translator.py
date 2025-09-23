@@ -4,14 +4,15 @@ import traceback
 from core.logger import logger
 from config.settings import *
 class Translator:
-    def make_url_trans(self, text, from_lang, to_lang):
-        return f"https://api.mymemory.translated.net/get?q={text}&langpair={from_lang}%7C{to_lang}"
-    
-    def translate_using_api(self, text, to_lang):
+    def translate_using_api(self, text, from_lang="en", to_lang="vi"):
         try: 
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            url = self.make_url_trans(text, 'en', to_lang)
-            response = requests.get(url, verify=False, timeout=TIMEOUT)
+            url = "https://api.mymemory.translated.net/get"
+            data = {
+                "q": text,
+                "langpair": f"{from_lang}|{to_lang}"
+            }
+            response = requests.post(url, data=data, timeout=TIMEOUT)
             data = response.json()
             response.raise_for_status()  # Raise an exception for HTTP errors
             return data['responseData']['translatedText']
@@ -28,6 +29,6 @@ class Translator:
         
         for lang in LANGUAGES:
             if lang == original_lang: continue
-            queries[lang] = self.translate_using_api(query, lang)
+            queries[lang] = self.translate_using_api(query, to_lang=lang)
         return queries
         
