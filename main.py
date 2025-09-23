@@ -41,11 +41,11 @@ def main():
     # Fetch content
     logger.info("[MAIN] Phase 3: Fetch content")
     index = 1
-    if IS_GOOGLE:
+    if IS_GOOGLE and (IS_SUMMARIZE_GOOGLE or IS_EXTRACT_GOOGLE):
         logger.info(f"[MAIN] Phase 3.{index} Google")
         index += 1
         results_google = fetcher.get_content(results_google)
-    if IS_RSS:
+    if IS_RSS and (IS_SUMMARIZE_RSS or IS_EXTRACT_RSS):
         logger.info(f"[MAIN] Phase 3.{index} RSS")
         index += 1
         results_rss = fetcher.get_content(results_rss)
@@ -53,15 +53,15 @@ def main():
     # AI process
     logger.info("[MAIN] Phase 4: AI process")
     index = 1
-    if IS_GOOGLE:
+    if IS_GOOGLE and (IS_SUMMARIZE_GOOGLE or IS_EXTRACT_GOOGLE):
         logger.info(f"[MAIN] Phase 4.{index}: AI process for Google")
         index += 1
         results_google = ai.process_ai_article(results_google, TOPIC_KEYWORD, GOOGLE)
-    if IS_RSS:
+    if IS_RSS and (IS_SUMMARIZE_RSS or IS_EXTRACT_RSS):
         logger.info(f"[MAIN] Phase 4.{index}: AI process for RSS")
         index += 1
         results_rss = ai.process_ai_article(results_rss, TOPIC_KEYWORD, RSS)
-    if IS_YOUTUBE:
+    if IS_YOUTUBE and (IS_SUMMARIZE_YOUTUBE or IS_EXTRACT_YOUTUBE):
         logger.info(f"[MAIN] Phase 4.{index}: AI process for Youtube")
         index += 1
         results_youtube = ai.process_ai_video(results_youtube, TOPIC_KEYWORD)
@@ -70,8 +70,10 @@ def main():
     logger.info("[MAIN] Phase 5: Export")
     if IS_GOOGLE:
         export_to_excel(results_google, GOOGLE)
+        export_to_html(results_google, GOOGLE)
     if IS_YOUTUBE:
         export_to_excel(results_youtube, YOUTUBE)
+        export_to_html(results_youtube, YOUTUBE)
     if IS_RSS:
         export_to_excel(results_rss, RSS)
         export_to_html(results_rss, RSS)

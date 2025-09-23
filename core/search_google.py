@@ -2,6 +2,7 @@ import requests
 import traceback
 from config.settings import *
 from core.logger import logger
+from core.translator import Translator
 
 '''
 ----- List params -----
@@ -22,6 +23,8 @@ rights          : Lọc theo giấy phép bản quyền                  : right
 sort            : Sắp xếp theo ngày hoặc mức độ liên quan       : sort=date - sắp xếp theo ngày | mặc định là dộ liên quan 
 '''
 class GoogleSearch:
+    def __init__(self):
+        self.translator = Translator()
     def search(self, query, date_restrict=f"d{DURATION}"):
         results = []
         for start in range(1, NUM_RESULTS_GOOGLE, RESULTS_PER_REQUEST_GOOGLE):
@@ -41,7 +44,8 @@ class GoogleSearch:
                         results.append({
                             "title": item.get("title", ""),
                             "link": item.get("link", ""),
-                            "snippet": item.get("snippet", "")
+                            "snippet": item.get("snippet", ""),
+                            "vietsub": self.translator.translate_using_api(text=item.get("snippet", ""))
                         })
                 else:
                     logger.error(f"[GOOGLE SEARCH] API error: {r.status_code}")

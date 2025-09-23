@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 class RSSSearch:
     def __init__(self):
         self.scraper = cloudscraper.create_scraper()
+        self.translator = Translator()
 
     def fetch_recent_posts(self, days=DURATION):
         recent_posts = []
@@ -31,7 +32,7 @@ class RSSSearch:
                         "link": entry.get("link"),
                         "published": pub.isoformat(),
                         "snippet": entry.get("summary", ""),
-                        "vietsub": Translator().translate_using_api(text=html.escape(BeautifulSoup(entry.get("summary", ""), "html.parser").get_text()))
+                        "vietsub": self.translator.translate_using_api(text=html.escape(BeautifulSoup(entry.get("summary", ""), "html.parser").get_text()))
                     })
 
         return recent_posts

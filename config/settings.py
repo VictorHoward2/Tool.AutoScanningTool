@@ -4,10 +4,10 @@ from utils.time_utils import get_previous_date
 
 # Modules settings
 IS_TRANSLATE = False
-IS_GOOGLE = False
+IS_GOOGLE = True
 IS_SUMMARIZE_GOOGLE = False
 IS_EXTRACT_GOOGLE = False
-IS_YOUTUBE = False
+IS_YOUTUBE = True
 IS_SUMMARIZE_YOUTUBE = False
 IS_EXTRACT_YOUTUBE = False
 IS_RSS = True
@@ -16,7 +16,7 @@ IS_EXTRACT_RSS = False
 
 # Scan settings
 TOPIC_KEYWORD = "LLM" # các thông tin muốn trích xuất
-QUERY = ''  #default: EN
+QUERY = 'Cybersecurity LLM'  #default: EN
 # DEMANDS = [
 #     "Tên thiết bị hoặc tên dòng máy liên quan đến từ khóa, càng nhiều thông tin chi tiết càng tốt",
 #     "Tên công cụ (tool) hoặc tên phần mềm hoặc phương thức được dùng để thực hiện",
@@ -27,7 +27,7 @@ QUERY = ''  #default: EN
 DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 60 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 4 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 NOW = str(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
 PUBLISHED_FROM = get_previous_date(day=DURATION)
@@ -37,7 +37,7 @@ LOG_DIR = os.path.join(os.getcwd(), 'data/logs')
 
 # Translate settings
 LANGUAGES = ["en", "es", "fr", "de", "pt", "th"]
-TIMEOUT = 10
+TIMEOUT = 30
 
 # AI settings
 DEFAULT_MODEL = "gemma3:270m"

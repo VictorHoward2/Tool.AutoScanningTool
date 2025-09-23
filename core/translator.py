@@ -9,7 +9,7 @@ class Translator:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             url = "https://api.mymemory.translated.net/get"
             data = {
-                "q": text,
+                "q": text[:490],  # Giới hạn độ dài để tránh lỗi
                 "langpair": f"{from_lang}|{to_lang}"
             }
             response = requests.post(url, data=data, timeout=TIMEOUT)

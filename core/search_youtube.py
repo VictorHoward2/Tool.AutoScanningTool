@@ -3,7 +3,11 @@ import traceback
 import urllib.parse
 from core.logger import logger
 from config.settings import *
+from core.translator import Translator
+
 class YoutubeSearch:
+    def __init__(self):
+        self.translator = Translator()
     def fetch_video_info(self, videoId):
         try:
             params = {
@@ -59,7 +63,8 @@ class YoutubeSearch:
                     results.append({
                         "title": info.get("snippet", {}).get("title", ""),
                         "link": f"{URL_LINK_YOUTUBE}{videoId}",
-                        "snippet": info.get("snippet", {}).get("description", "")
+                        "snippet": info.get("snippet", {}).get("description", ""),
+                        "vietsub": self.translator.translate_using_api(text=info.get("snippet", {}).get("description", ""))
                     })
             else:
                 logger.error(f"[YOUTUBE SEARCH] Request error: {r.status_code}")

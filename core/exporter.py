@@ -13,7 +13,7 @@ def export_to_excel(data, sheetname):
     if not os.path.exists(OUTPUT_PATH):
         os.makedirs(OUTPUT_PATH)
 
-    file_path = os.path.join(OUTPUT_PATH, f"results_{DURATION}days_{NOW}.xlsx")
+    file_path = os.path.join(OUTPUT_PATH, f"results_{NOW}_{DURATION}days.xlsx")
     sheet_name = f'{sheetname}_{NOW}'
     
     data = [{k.upper(): v for k, v in item.items()} for item in data]
@@ -33,7 +33,7 @@ def export_to_excel(data, sheetname):
 
 def export_to_html(data, service, output_path="output"):
     # Ngày hôm nay
-    filepath = os.path.join(OUTPUT_PATH, f"results_{DURATION}days_{NOW}.html")
+    filepath = os.path.join(OUTPUT_PATH, f"results_{NOW}_{DURATION}days_{service}.html")
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
