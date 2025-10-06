@@ -4,12 +4,15 @@ from utils.time_utils import get_previous_date
 
 # Modules settings
 IS_TRANSLATE = False
-IS_GOOGLE = True
+
+IS_GOOGLE = False
 IS_SUMMARIZE_GOOGLE = False
 IS_EXTRACT_GOOGLE = False
-IS_YOUTUBE = True
+
+IS_YOUTUBE = False
 IS_SUMMARIZE_YOUTUBE = False
 IS_EXTRACT_YOUTUBE = False
+
 IS_RSS = True
 IS_SUMMARIZE_RSS = False
 IS_EXTRACT_RSS = False
@@ -27,7 +30,7 @@ QUERY = 'Cybersecurity LLM'  #default: EN
 DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 4 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 60 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 NOW = str(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
 PUBLISHED_FROM = get_previous_date(day=DURATION)

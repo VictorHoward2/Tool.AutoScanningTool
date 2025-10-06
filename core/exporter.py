@@ -46,6 +46,10 @@ def export_to_html(data, service, output_path="output"):
     margin: 0;
     padding: 20px;
     color: #333;
+    background-image: url('./../../ui/assets/News.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     }
     header {
     max-width: 800px;
