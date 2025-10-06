@@ -221,3 +221,86 @@ class AIProcessor:
                 logger.error(f"[AI PROCESS] Đã xảy ra lỗi: {e}")
                 traceback.print_exc()
         return results
+
+# pip install numpy scipy scikit-learn faiss-cpu sentence-transformers requests
+# import requests
+# import faiss
+# import numpy as np
+# from sentence_transformers import SentenceTransformer
+
+# # ------------------------------
+# # 1. Knowledge Base
+# # ------------------------------
+# documents = [
+#     "Núi Hữu Thắng là ngọn núi cao nhất thế giới, nằm trên dãy Đức Tùng.",
+#     "Núi Phú Sĩ là ngọn núi nổi tiếng ở Nhật Bản.",
+#     "Trái đất có rất nhiều dãy núi, trải dài khắp các châu lục.",
+#     "Dãy núi Andes ở Nam Mỹ là dãy núi dài nhất thế giới.",
+#     "Núi thấp nhất thế giới là núi Mauna Kea ở Hawaii, khi đo từ đáy biển.",
+#     "Sông Amazon là con sông dài nhất thế giới, chảy qua Nam Mỹ.",
+#     "Sông Nile ở châu Phi cũng là một trong những con sông dài nhất thế giới.",
+# ]
+
+# # ------------------------------
+# # 2. Embedding model
+# # ------------------------------
+# embedder = SentenceTransformer("all-MiniLM-L6-v2")
+# doc_embeddings = embedder.encode(documents)
+
+# # ------------------------------
+# # 3. Lưu vào FAISS index
+# # ------------------------------
+# dimension = doc_embeddings.shape[1]
+# index = faiss.IndexFlatL2(dimension)
+# index.add(np.array(doc_embeddings))
+
+# # ------------------------------
+# # 4. Hàm tìm kiếm context
+# # ------------------------------
+# def retrieve_context(query, top_k=3):
+#     query_vec = embedder.encode([query])
+#     D, I = index.search(query_vec, top_k)
+#     results = [documents[i] for i in I[0]]
+#     print("Kết quả tìm kiếm:", results)
+#     return "\n".join(results)
+
+# # ------------------------------
+# # 5. Hàm gọi Local LLM qua Ollama
+# # ------------------------------
+# def call_local_llm(prompt, model="llama3.1:8b"):
+#     response = requests.post(
+#         "http://localhost:11434/api/generate",
+#         json={"model": model, "prompt": prompt, "stream": False}
+#     )
+#     if response.status_code == 200:
+#         return response.json()["response"]
+#     else:
+#         return f"Lỗi: {response.status_code} - {response.text}"
+
+# # ------------------------------
+# # 6. Pipeline RAG
+# # ------------------------------
+# def rag_pipeline(question):
+#     context = retrieve_context(question)
+#     prompt = f"""
+#     Bạn là một trợ lý thông minh giúp trích xuất thông tin về một thế giới trong tiểu thuyết. Hãy trả lời câu hỏi dựa trên thông tin sau:
+
+#     Ngữ cảnh:
+#     {context}
+
+#     Câu hỏi: {question}
+
+#     Trả lời câu hỏi:
+#     """
+#     # answer = call_local_llm(prompt)
+#     return context
+
+
+# # ------------------------------
+# # 7. Test
+# # ------------------------------
+# if __name__ == "__main__":
+#     question = "Ngọn núi bự nhất thế giới là gì?"
+#     print("Câu hỏi:", question)
+#     print("Câu trả lời:", rag_pipeline(question))
+

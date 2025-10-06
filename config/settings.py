@@ -30,7 +30,7 @@ QUERY = 'Cybersecurity LLM'  #default: EN
 DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 60 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 7 # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 NOW = str(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
 PUBLISHED_FROM = get_previous_date(day=DURATION)
