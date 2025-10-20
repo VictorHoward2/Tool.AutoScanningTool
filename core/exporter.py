@@ -61,7 +61,7 @@ def _extract_keywords(obj: Any) -> List[str]:
 
 def classify_security_article(content: str,
                               json_path: str = ".\\config\\security_categories.json",
-                              top_n: int = 3,
+                              top_n: int = 5,
                               threshold: int = 1,
                               debug: bool = False) -> List[Tuple[str, int]]:
     """
@@ -80,6 +80,9 @@ def classify_security_article(content: str,
     # Load JSON
     with open(json_path, "r", encoding="utf-8") as f:
         categories_raw: Dict[str, Any] = json.load(f)
+
+    if debug:
+        print(f"\n\n[DEBUG] Content: {content}.")
 
     # Chuẩn hóa text
     text = content.lower()
@@ -221,7 +224,9 @@ def export_to_html_vn(data, service, output_path="output"):
     }
     .filter-bar {
         text-align: center;
-        margin-bottom: 25px;
+        max-width: 800px;
+        margin: auto;
+        padding: 25px;
     }
     .filter-btn {
         background: #e0e0e0;
@@ -427,7 +432,9 @@ def export_to_html_en(data, service, output_path="output"):
     }
     .filter-bar {
         text-align: center;
-        margin-bottom: 25px;
+        max-width: 800px;
+        margin: auto;
+        padding: 25px;
     }
     .filter-btn {
         background: #e0e0e0;

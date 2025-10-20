@@ -1,94 +1,155 @@
 {
-  "Network & Infrastructure Security": {
+  "Web Security": {
     "keywords": [
-      "network", "nmap", "port", "firewall", "ids", "ips", "vpn", "ddos", "sniff", 
-      "wireshark", "tcpdump", "vlan", "router", "switch", "netcat", "icmp", "telnet", "ssh", 
-      "intrusion", "smb", "ftp", "snmp", "icmp", 
-      "arp", "spoofing", "mitm", "man in the middle", "dns", "poisoning", "ipsec", 
-      "segmentation", "tcp", "udp", "ping sweep", "firewall rule"
+      "web", "website", "xss", "cross site scripting", "sqli", "sql injection", "csrf", "ssrf", 
+      "xxe", "rfi", "lfi", "command injection", "path traversal", "directory traversal", 
+      "file inclusion", "authentication bypass", "cookie hijacking", "session fixation", 
+      "clickjacking", "webshell", "burp suite", "owasp", "bug bounty", "csp", 
+      "content security policy", "http header", "input validation", "stored xss", "reflected xss", 
+      "parameter tampering", "api security", "graphql", "deserialization", "file upload", 
+      "server side request forgery", "insecure direct object reference", "idor", "web vuln", 
+      "web application firewall", "waf", "rate limiting", "webapp", "web attack", "csrf attack",
+      "site", "malicious"
     ]
   },
 
-  "Web & Application Security": {
+  "Pentest & Red Teaming": {
     "keywords": [
-      "web security", "xss", "cross site scripting", "sqli", "sql injection", "csrf", "ssrf", 
-      "xxe", "rfi", "lfi", "command injection", "path traversal", "directory traversal", "burp suite", 
-      "owasp", "authentication bypass", "cookie", "hijacking", "session fixation", "clickjacking", 
-      "web application", "bug bounty", "csrf", "parameter tampering", "csp", 
-      "content security policy", "input validation", "reflected xss", "stored xss", 
-      "http header", "webshell", "csrf attack", "server side request forgery", "api security", 
-      "graphql", "web vuln", "webapp"
+      "penetration testing", "red team", "ethical hacking", "post exploitation", 
+      "reconnaissance", "enumeration", "social engineering", "payload delivery", 
+      "pivoting", "lateral movement", "privilege escalation", "exfiltration", 
+      "phishing campaign", "command and control", "ad exploitation", "active directory", 
+      "mimikatz", "cobalt strike", "bloodhound", "empire", "offensive security", 
+      "ad enumeration", "initial access", "weaponization", "attack simulation", 
+      "offsec", "metasploit", "internal network", "exploit chain", "phishing", "site",
+      "malicious"
     ]
   },
 
-  "Cloud & Virtualization Security": {
+  "Network Security": {
     "keywords": [
-      "aws", "azure", "gcp", "google cloud", "cloudflare", "iam", "bucket", "ec2", "lambda", "cloud",
-      "kubernetes", "k8s", "container", "docker", "cloud misconfiguration", "cloud", "virtual machine", "hypervisor", "openstack", 
-      "cloud credentials", "api key leak", "s3 public bucket", "cloud storage", "service account", 
-      "kubeconfig", "cloud identity", "terraform", "cloud exploitation", "aws", "azure"
+      "network", "infrastructure", "nmap", "port scan", "firewall", "ids", "ips", "vpn", 
+      "ddos", "dos", "sniff", "wireshark", "tcpdump", "vlan", "router", "switch", 
+      "netcat", "icmp", "telnet", "ssh", "intrusion detection", "intrusion prevention", 
+      "arp spoofing", "dns poisoning", "mitm", "man in the middle", "ipsec", "segmentation", 
+      "tcp", "udp", "ping sweep", "firewall rule", "proxy", "tls downgrade", "ssl stripping", 
+      "network monitoring", "packet capture"
     ]
   },
 
-  "System & Software Security": {
+  "Cloud Security": {
     "keywords": [
-      "system", "os", "vulnerability", "exploit", "patch", 
-      "patch tuesday", "privilege escalation", "kernel", "dll", "registry", 
-      "powershell", "bash", "rootkit", "local exploit", 
-      "heap", "buffer", "remote code execution", "rce", 
-      "sandbox", "memory corruption", "aslr bypass", "software", "windows", 
-      "linux", "driver", "zero day", "system hardening"
+      "cloud", "aws", "azure", "gcp", "google cloud", "cloudflare", "iam", "bucket", "ec2", 
+      "lambda", "s3", "cloud storage", "kubernetes", "k8s", "container", "docker", 
+      "cloud misconfiguration", "cloud credentials", "service account", "kubeconfig", 
+      "api key leak", "cloud identity", "terraform", "cloud exploitation", "public bucket", 
+      "virtual machine", "hypervisor", "openstack", "serverless", "cloud security posture", 
+      "cloud trail", "aws cli", "gcp project"
     ]
   },
 
-  "Hardware & IoT Security": {
+  "OS Security": {
     "keywords": [
-      "iot", "firmware", "embedded", "hardware", "chipset", "bios", "uefi", "ble", 
-      "device", "firmware", "usb", "jailbreak", "rooting",
-      "supply chain", "iot", "camera", "radio", 
-      "rfid", "nfc", "bluetooth", "wifi", "signal jamming",
-      "jtag", "uart"
+      "system", "os", "windows", "linux", "macos", "vulnerability", "exploit", "patch", 
+      "patch tuesday", "privilege escalation", "kernel", "dll", "registry", "powershell", 
+      "bash", "rootkit", "local exploit", "heap overflow", "buffer overflow", 
+      "remote code execution", "rce", "sandbox", "memory corruption", "aslr bypass", 
+      "system hardening", "driver", "zero day", "binary exploitation", "process injection", 
+      "persistence", "system exploit"
     ]
   },
 
-  "Data & Cryptography": {
-    "keywords": [
-      "data", "data security", "data leak", "data breach", "encryption", "cryptography", "aes", "rsa", 
-      "tls", "ssl", "hashing", "md5", "sha256", "privacy", "gdpr", "hipaa", "data protection", 
-      "personal data", "credentials leak", "password leak", "information disclosure", 
-      "pseudonymization", "tokenization", "database leak", "plaintext password", 
-      "privacy regulation", "data exfiltration", "certificate", "ssl stripping", "https downgrade", "infostealers"
-    ]
-  },
-
-  "Malware & Threat Intelligence": {
+  "Malware": {
     "keywords": [
       "malware", "ransomware", "spyware", "trojan", "worm", "backdoor", "rootkit", "botnet", 
-      "apt", "threat intel", "ioc", "indicator of compromise", "phishing", "malicious payload", 
-      "threat actor", "cobalt strike", "command and control", "dark web", "malware campaign", 
-      "threat hunting", "malicious code", "payload", "threat feed", "threat group", 
-      "threat detection", "cyber espionage", "ransom note", "data exfiltration", 
-      "malware family", "keylogger", "infostealers", "Bookworm", "malicious"
+      "apt", "threat intel", "threat intelligence", "ioc", "indicator of compromise", 
+      "phishing", "malicious payload", "threat actor", "cobalt strike", "command and control", 
+      "dark web", "malware campaign", "threat hunting", "threat detection", "cyber espionage", 
+      "infostealer", "keylogger", "payload", "threat feed", "malware family", 
+      "ransom note", "data exfiltration", "malicious code", "loader", "dropper", "obfuscation",
+      "extortion"
     ]
   },
 
-  "Security Management & Governance": {
+  "Vulnerability Research": {
     "keywords": [
-      "security policy", "compliance", "iso 27001", "nist", "soc2", "pci dss", "hipaa", 
-      "governance", "audit", "risk assessment", "cybersecurity law", "ciso", "incident response", 
-      "security strategy", "policy enforcement", "risk management", "regulation", 
-      "security awareness", "training", "standards", "governance risk compliance", "grc", 
-      "security budget", "incident management", "reporting", "security control"
+      "exploit", "vulnerability", "cve", "zero day", "heap overflow", "buffer overflow", 
+      "stack overflow", "code execution", "memory leak", "exploit development", 
+      "reverse engineering", "debugger", "poc", "proof of concept", "metasploit", 
+      "payload", "shellcode", "fuzzing", "exploit kit", "heap spray", "aslr", "dep bypass", 
+      "binary analysis", "vulnerability disclosure", "vuln research", "security advisory", 
+      "exploit db", "reverse shell"
     ]
   },
 
-  "Tools, AI & Research": {
+  "Blue Team": {
     "keywords": [
-      "tool", "automation", "script", "python", "powershell", "script","ai", "agent",
-      "ml", "sigma rules", "analysis", "research", "deep learning", "machine learning", "prompt",
-      "artificial intelligence","open source", "open-source", "gpt", "chatgpt", "bard", "llm",
-      "copilot", "generation", "model", "llm", "neural", "transformer", "large language model",
-      "framework"
+      "blue team", "defense", "incident response", "detection", "mitigation", 
+      "threat hunting", "forensics", "siem", "splunk", "elastic", "suricata", 
+      "zeek", "bro", "security operations", "soc", "edr", "xdr", "incident triage", 
+      "containment", "recovery", "alert", "security monitoring", "log analysis", 
+      "memory analysis", "malware analysis", "incident report", "response plan", 
+      "threat detection", "digital forensics", "timeline analysis", "mitre att&ck"
+    ]
+  },
+
+  "Cryptography & Encryption": {
+    "keywords": [
+      "cryptography", "encryption", "decryption", "aes", "rsa", "tls", "ssl", 
+      "hashing", "md5", "sha1", "sha256", "pbkdf2", "bcrypt", "key exchange", 
+      "digital signature", "certificate", "ssl stripping", "https downgrade", 
+      "data encryption", "data protection", "pseudonymization", "tokenization", 
+      "cryptanalysis", "cipher", "privacy", "gdpr", "hipaa", "steganography", "obfuscated"
+    ]
+  },
+
+  "Mobile Security": {
+    "keywords": [
+      "mobile", "android", "ios", "apk", "ipa", "mobile app", "mobile malware", 
+      "reverse engineering", "mobile exploit", "rooting", "jailbreak", "adb", 
+      "mobile pentest", "frida", "burp suite mobile", "insecure data storage", 
+      "intent hijacking", "deeplink", "android manifest", "ssl pinning", 
+      "obfuscation", "mobile security testing"
+    ]
+  },
+
+  "IoT Security": {
+    "keywords": [
+      "iot", "firmware", "embedded", "hardware", "chipset", "bios", "uefi", 
+      "ble", "rfid", "nfc", "bluetooth", "wifi", "signal jamming", "uart", 
+      "jtag", "device", "camera", "sensor", "router", "supply chain", 
+      "iot malware", "iot botnet", "firmware analysis", "smart home"
+    ]
+  },
+
+  "Security Policy & Governance": {
+    "keywords": [
+      "security policy", "compliance", "iso 27001", "nist", "soc2", "pci dss", 
+      "hipaa", "gdpr", "audit", "governance", "risk assessment", "risk management", 
+      "incident management", "incident response plan", "ciso", "security framework", 
+      "grc", "governance risk compliance", "security control", "security awareness", 
+      "training", "policy enforcement", "security standard", "cyber law", 
+      "data protection regulation"
+    ]
+  },
+
+  "AI Automation & Tools": {
+    "keywords": [
+      "ai", "automation", "tool", "script", "python", "bash", "powershell", 
+      "machine learning", "deep learning", "ml", "llm", "gpt", "chatgpt", 
+      "copilot", "artificial intelligence", "agent", "prompt injection", 
+      "ai security", "model", "neural network", "transformer", 
+      "sigma rules", "open source", "open-source", "cyber ai", "ai-generated", 
+      "threat analysis automation"
+    ]
+  },
+
+  "Hardware Security": {
+    "keywords": [
+      "hardware", "chipset", "bios", "uefi", "firmware", "embedded", 
+      "jtag", "uart", "spi", "tpm", "secure boot", "fpga", "cpu", "gpu", 
+      "firmware dumping", "hardware hacking", "usb", "side channel", 
+      "hardware vulnerability", "electromagnetic attack", "supply chain attack"
     ]
   }
 }
