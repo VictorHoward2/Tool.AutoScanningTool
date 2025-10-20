@@ -1,0 +1,94 @@
+{
+  "Network & Infrastructure Security": {
+    "keywords": [
+      "network", "nmap", "port", "firewall", "ids", "ips", "vpn", "ddos", "sniff", 
+      "wireshark", "tcpdump", "vlan", "router", "switch", "netcat", "icmp", "telnet", "ssh", 
+      "intrusion", "smb", "ftp", "snmp", "icmp", 
+      "arp", "spoofing", "mitm", "man in the middle", "dns", "poisoning", "ipsec", 
+      "segmentation", "tcp", "udp", "ping sweep", "firewall rule"
+    ]
+  },
+
+  "Web & Application Security": {
+    "keywords": [
+      "web security", "xss", "cross site scripting", "sqli", "sql injection", "csrf", "ssrf", 
+      "xxe", "rfi", "lfi", "command injection", "path traversal", "directory traversal", "burp suite", 
+      "owasp", "authentication bypass", "cookie", "hijacking", "session fixation", "clickjacking", 
+      "web application", "bug bounty", "csrf", "parameter tampering", "csp", 
+      "content security policy", "input validation", "reflected xss", "stored xss", 
+      "http header", "webshell", "csrf attack", "server side request forgery", "api security", 
+      "graphql", "web vuln", "webapp"
+    ]
+  },
+
+  "Cloud & Virtualization Security": {
+    "keywords": [
+      "aws", "azure", "gcp", "google cloud", "cloudflare", "iam", "bucket", "ec2", "lambda", "cloud",
+      "kubernetes", "k8s", "container", "docker", "cloud misconfiguration", "cloud", "virtual machine", "hypervisor", "openstack", 
+      "cloud credentials", "api key leak", "s3 public bucket", "cloud storage", "service account", 
+      "kubeconfig", "cloud identity", "terraform", "cloud exploitation", "aws", "azure"
+    ]
+  },
+
+  "System & Software Security": {
+    "keywords": [
+      "system", "os", "vulnerability", "exploit", "patch", 
+      "patch tuesday", "privilege escalation", "kernel", "dll", "registry", 
+      "powershell", "bash", "rootkit", "local exploit", 
+      "heap", "buffer", "remote code execution", "rce", 
+      "sandbox", "memory corruption", "aslr bypass", "software", "windows", 
+      "linux", "driver", "zero day", "system hardening"
+    ]
+  },
+
+  "Hardware & IoT Security": {
+    "keywords": [
+      "iot", "firmware", "embedded", "hardware", "chipset", "bios", "uefi", "ble", 
+      "device", "firmware", "usb", "jailbreak", "rooting",
+      "supply chain", "iot", "camera", "radio", 
+      "rfid", "nfc", "bluetooth", "wifi", "signal jamming",
+      "jtag", "uart"
+    ]
+  },
+
+  "Data & Cryptography": {
+    "keywords": [
+      "data", "data security", "data leak", "data breach", "encryption", "cryptography", "aes", "rsa", 
+      "tls", "ssl", "hashing", "md5", "sha256", "privacy", "gdpr", "hipaa", "data protection", 
+      "personal data", "credentials leak", "password leak", "information disclosure", 
+      "pseudonymization", "tokenization", "database leak", "plaintext password", 
+      "privacy regulation", "data exfiltration", "certificate", "ssl stripping", "https downgrade", "infostealers"
+    ]
+  },
+
+  "Malware & Threat Intelligence": {
+    "keywords": [
+      "malware", "ransomware", "spyware", "trojan", "worm", "backdoor", "rootkit", "botnet", 
+      "apt", "threat intel", "ioc", "indicator of compromise", "phishing", "malicious payload", 
+      "threat actor", "cobalt strike", "command and control", "dark web", "malware campaign", 
+      "threat hunting", "malicious code", "payload", "threat feed", "threat group", 
+      "threat detection", "cyber espionage", "ransom note", "data exfiltration", 
+      "malware family", "keylogger", "infostealers", "Bookworm", "malicious"
+    ]
+  },
+
+  "Security Management & Governance": {
+    "keywords": [
+      "security policy", "compliance", "iso 27001", "nist", "soc2", "pci dss", "hipaa", 
+      "governance", "audit", "risk assessment", "cybersecurity law", "ciso", "incident response", 
+      "security strategy", "policy enforcement", "risk management", "regulation", 
+      "security awareness", "training", "standards", "governance risk compliance", "grc", 
+      "security budget", "incident management", "reporting", "security control"
+    ]
+  },
+
+  "Tools, AI & Research": {
+    "keywords": [
+      "tool", "automation", "script", "python", "powershell", "script","ai", "agent",
+      "ml", "sigma rules", "analysis", "research", "deep learning", "machine learning", "prompt",
+      "artificial intelligence","open source", "open-source", "gpt", "chatgpt", "bard", "llm",
+      "copilot", "generation", "model", "llm", "neural", "transformer", "large language model",
+      "framework"
+    ]
+  }
+}
