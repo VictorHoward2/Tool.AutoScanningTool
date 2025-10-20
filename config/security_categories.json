@@ -71,14 +71,14 @@
     ]
   },
 
-  "Vulnerability Research": {
+  "Vulnerability & Global Incidents": {
     "keywords": [
       "exploit", "vulnerability", "cve", "zero day", "heap overflow", "buffer overflow", 
       "stack overflow", "code execution", "memory leak", "exploit development", 
       "reverse engineering", "debugger", "poc", "proof of concept", "metasploit", 
       "payload", "shellcode", "fuzzing", "exploit kit", "heap spray", "aslr", "dep bypass", 
       "binary analysis", "vulnerability disclosure", "vuln research", "security advisory", 
-      "exploit db", "reverse shell"
+      "exploit db", "reverse shell", "Threat Brief"
     ]
   },
 
