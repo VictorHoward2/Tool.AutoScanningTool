@@ -62,7 +62,13 @@ URL_INFO_VIDEO = "https://www.googleapis.com/youtube/v3/videos"
 URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 
 # RSS
-RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.keysight.com/blogs/rss/feed.xml", "https://www.infostealers.com/learn-info-stealers/feed/"]  # Thêm nhiều RSS feed nếu cần
+RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", 
+           "https://www.keysight.com/blogs/rss/feed.xml", 
+           "https://www.infostealers.com/learn-info-stealers/feed/",
+           "https://feeds.feedburner.com/TheHackersNews",
+           "https://www.securityweek.com/feed/",
+           "https://cyberscoop.com/feed/",
+           "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
 # CONSTANTS
 GOOGLE = "Google"
