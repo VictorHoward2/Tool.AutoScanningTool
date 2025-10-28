@@ -45,7 +45,7 @@ class GoogleSearch:
                             "title": item.get("title", ""),
                             "link": item.get("link", ""),
                             "snippet": item.get("snippet", ""),
-                            "vietsub": self.translator.translate_using_api(text=item.get("snippet", ""))
+                            "vietsub": self.translator.translate_using_gemini(text=item.get("snippet", ""))
                         })
                 else:
                     logger.error(f"[GOOGLE SEARCH] API error: {r.status_code}")

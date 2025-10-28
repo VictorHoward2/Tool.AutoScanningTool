@@ -64,7 +64,7 @@ class YoutubeSearch:
                         "title": info.get("snippet", {}).get("title", ""),
                         "link": f"{URL_LINK_YOUTUBE}{videoId}",
                         "snippet": info.get("snippet", {}).get("description", ""),
-                        "vietsub": self.translator.translate_using_api(text=info.get("snippet", {}).get("description", ""))
+                        "vietsub": self.translator.translate_using_gemini(text=info.get("snippet", {}).get("description", ""))
                     })
             else:
                 logger.error(f"[YOUTUBE SEARCH] Request error: {r.status_code}")

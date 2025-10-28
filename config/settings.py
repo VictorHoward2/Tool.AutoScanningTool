@@ -62,19 +62,35 @@ URL_INFO_VIDEO = "https://www.googleapis.com/youtube/v3/videos"
 URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 
 # RSS
-RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", 
-           "https://www.keysight.com/blogs/rss/feed.xml", 
-           "https://www.infostealers.com/learn-info-stealers/feed/",
-           "https://feeds.feedburner.com/TheHackersNews",
-           "https://www.securityweek.com/feed/",
-           "https://cyberscoop.com/feed/",
-           "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+# RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", 
+#            "https://www.keysight.com/blogs/rss/feed.xml", 
+#            "https://www.infostealers.com/learn-info-stealers/feed/",
+#            "https://feeds.feedburner.com/TheHackersNews",
+#            "https://www.securityweek.com/feed/",
+#            "https://cyberscoop.com/feed/",
+#            "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+
+RSS_URL = ["https://unit42.paloaltonetworks.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
 # CONSTANTS
 GOOGLE = "Google"
 YOUTUBE = "Youtube"
 RSS = "RSS"
 
+GEMINI_API_KEYS = [
+    "AIzaSyAEl2kVpNIz0u9ExJbpjk3gqJxHS7gSXTk",
+    "AIzaSyAugYbgc1xMqYYGW2NX7ICbehUPJdaed6g",
+    "AIzaSyBf-eIa26TY9GpUxsssCQ693kEsDkYjYY0",
+    "AIzaSyBJ9C7S1BnXi6gORnq19HiS8WhNo7-6Jk0",
+    "AIzaSyBw423k9HuUhaHbgzkRt09nEw9__ayer6g",
+    "AIzaSyD0YhhsFjW9vVMYIMxMYpENWZeBkwORaDQ",
+    "AIzaSyC4NhspuItFwvI1U7JJfmQIEJtwqN6r1EE",
+    "AIzaSyDiaVjhw_3hm6gr4IwRjRJIbQjjgERh4eI",
+    "AIzaSyD2hbKvhp0TRHJyV0pc2xXHwz2meNJkUAc",
+    "AIzaSyBREMlV8_oZUjPOTRl2siF4Ime2QQdN1eE",
+    "AIzaSyCvIColbM8PiY9EQ6GE6EoQtHv5gbL2MoM",
+    "AIzaSyCMINjA10a13mDsUs4k2LemwPemC-p_QDU"
+    ]
 
 
 
