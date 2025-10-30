@@ -19,7 +19,7 @@ class AIProcessor:
         clean_text = clean_text.strip()
         return clean_text
 
-    def _call_gemini(self, system_instruction, user_prompt, error_prefix, title=None):
+    def _call_gemini(self, system_instruction, user_prompt, error_prefix, title=None, model=DEFAULT_MODEL_GEMINI):
         if not GEMINI_API_KEYS:
             logger.error(f"[AI PROCESS][GEMINI] No API keys found in GEMINI_API_KEYS.")
             return None
@@ -27,7 +27,7 @@ class AIProcessor:
             try:
                 client = genai.Client(api_key=api_key)
                 response = client.models.generate_content(
-                    model=DEFAULT_MODEL_GEMINI,
+                    model=model,
                     config=types.GenerateContentConfig(
                         # Enable thinking with a fixed budget (0 -> 24576):
                         # thinking_config=types.ThinkingConfig(thinking_budget=1024),
@@ -94,7 +94,7 @@ class AIProcessor:
             f"Nội dung: {content}\n\n"
             f"Hãy tóm tắt nội dung trang web trên cho tôi."
         )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title)
+        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
     def summarize_content_ollama(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
@@ -128,7 +128,7 @@ class AIProcessor:
             f"Link video: {link}\n\n"
             f"Hãy tóm tắt nội dung video trên cho tôi."
         )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title)
+        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
     def summarize_description_ollama(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
@@ -161,7 +161,7 @@ class AIProcessor:
             f"Tiêu đề: {title}\nĐoạn trích: {snippet}\nLink: {link}\nChủ đề quan tâm: {topic_key}\n\n"
             "Hãy đánh giá nội dung trên có liên quan đến chủ đề tôi đang quan tâm hay không. Trả về kết quả theo quy ước đã nêu."
         )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="evaluate", title=title)
+        return self._call_gemini(system_instruction, user_prompt, error_prefix="evaluate", title=title, model=model)
 
     def is_related_ollama(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
@@ -198,7 +198,7 @@ class AIProcessor:
             f"Ưu tiên trả lời lần lượt theo thứ tự các mục sau:\n"
             f"{demands_text}"
         )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="extract info")
+        return self._call_gemini(system_instruction, user_prompt, error_prefix="extract info", model=model)
 
     def extract_info_ollama(self, topic_key, text, model=DEFAULT_MODEL_OLLAMA):
         if text == "":
@@ -392,3 +392,20 @@ class AIProcessor:
                 logger.error(f"[AI PROCESS] Đã xảy ra lỗi: {e}")
                 traceback.print_exc()
         return results
+
+    def summarize_overview_gemini(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        system_instruction = (
+            f"Bạn là một chuyên gia phân tích và tóm tắt văn bản. "
+            f"Nhiệm vụ của bạn: hãy viết một bản báo cáo tổng quát bằng tiếng Việt, "
+            f"dễ hiểu, đầy đủ ý chính, tránh lan man, tối đa {num_words} chữ. "
+            f"Kết quả nên được viết dưới dạng một đoạn văn liên tục. Không viết dạng file markdown."
+        )
+        all_content = ""
+        for idx, item in enumerate(results, 1):
+            all_content += f"[{idx}] {item.get('title', '')}\n {item.get('snippet', '')}\n {item.get('link', '')}\n\n"
+
+        user_prompt = (
+            f"Nội dung: {all_content}\n\n"
+            f"Hãy tóm tắt nội dung trên cho tôi."
+        )
+        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize all")

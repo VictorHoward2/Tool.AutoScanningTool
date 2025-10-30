@@ -4,6 +4,7 @@ import json
 import pandas as pd
 from config.settings import *
 from core.logger import logger
+from core.ai_processor import AIProcessor
 from utils.time_utils import *
 from collections import defaultdict
 from typing import List, Tuple, Dict, Any
@@ -236,10 +237,15 @@ JS_TEMPLATE = """
     function filterArticles(category) {
         const articles = document.querySelectorAll('article');
         const buttons = document.querySelectorAll('.filter-btn');
+
+        // Reset trạng thái nút
         buttons.forEach(btn => btn.classList.remove('active'));
         document.getElementById(category).classList.add('active');
+
+        // Lọc bài viết
         articles.forEach(article => {
-            if (category === 'all' || article.dataset.categories.includes(category)) {
+            const categories = article.dataset.categories || ''; // tránh lỗi undefined
+            if (category === 'all' || categories.includes(category)) {
                 article.style.display = 'block';
             } else {
                 article.style.display = 'none';
@@ -247,6 +253,7 @@ JS_TEMPLATE = """
         });
     }
 """
+
 
 def _build_filter_buttons(all_categories: set):
     filter_buttons = '<button id="all" class="filter-btn active" onclick="filterArticles(\'all\')">All</button>'
@@ -306,15 +313,26 @@ def _render_articles_html(data, lang="vi"):
         articles_html += article_html
     return articles_html, all_categories
 
-def export_to_html_template(data, service, lang="vi", output_path="output"):
-    # Định danh
+def export_to_html_template(data, service, lang="vi"):
+    if not os.path.exists(OUTPUT_PATH):
+        os.makedirs(OUTPUT_PATH)
+
+
     filepath = os.path.join(OUTPUT_PATH, f"results_{NOW}_{DURATION}days_{service}_{'VI' if lang=='vi' else 'EN'}.html")
+
+
     if service == RSS:
         category = "Security News" if lang == "en" else "Security News"
+        sumary_overview = AIProcessor().summarize_overview_gemini(data)
+        sumary_overview_line = f'''
+        <article class="translation-label">
+            <h2>{"Tổng Quan" if lang == "vi" else "Overview"}:</h2>
+            <p class="snippet">{sumary_overview}</p>
+        </article>'''
     else:
         category = f"Kết Quả Scan {service}" if lang == "vi" else f"{service} Scan Results"
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
+
+    
     articles_html, all_categories = _render_articles_html(data, lang=lang)
     filter_buttons = _build_filter_buttons(all_categories)
     today_label = f"Ngày {TODAY} - {DURATION} ngày gần nhất." if lang=="vi" else f"Update at {TODAY} - The last {DURATION} days."
@@ -335,6 +353,7 @@ def export_to_html_template(data, service, lang="vi", output_path="output"):
             </header>
             <div class="filter-bar">{filter_buttons}</div>
             <main>
+                {sumary_overview_line if service == RSS else ""}
                 {articles_html}
             </main>
             <script>{JS_TEMPLATE}</script>
@@ -346,7 +365,7 @@ def export_to_html_template(data, service, lang="vi", output_path="output"):
     logger.info(f"[EXPORT] Xuất dữ liệu {service} bản {'VI' if lang == 'vi' else 'EN'} thành công ra {filepath}")
 
 def export_to_html_vn(data, service, output_path="output"):
-    return export_to_html_template(data, service, lang="vi", output_path=output_path)
+    return export_to_html_template(data, service, lang="vi")
 
 def export_to_html_en(data, service, output_path="output"):
-    return export_to_html_template(data, service, lang="en", output_path=output_path)
+    return export_to_html_template(data, service, lang="en")
