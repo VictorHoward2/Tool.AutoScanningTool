@@ -4,7 +4,7 @@ from config.settings import *
 from core.logger import logger
 from core.translator import Translator
 
-'''
+"""
 ----- List params -----
 q               : từ khóa tìm kiếm                              :
 key             : api key                                       :    
@@ -21,10 +21,13 @@ safe            : Bộ lọc nội dung người lớn                     : saf
 fileType        : Chỉ tìm file có định dạng cụ thể              : fileType=pdf
 rights          : Lọc theo giấy phép bản quyền                  : rights=cc_publicdomain
 sort            : Sắp xếp theo ngày hoặc mức độ liên quan       : sort=date - sắp xếp theo ngày | mặc định là dộ liên quan 
-'''
+"""
+
+
 class GoogleSearch:
     def __init__(self):
         self.translator = Translator()
+
     def search(self, query, date_restrict=f"d{DURATION}"):
         results = []
         for start in range(1, NUM_RESULTS_GOOGLE, RESULTS_PER_REQUEST_GOOGLE):
@@ -32,7 +35,7 @@ class GoogleSearch:
                 "key": API_KEY_GOOGLE,
                 "cx": SEARCH_ENGINE_ID_GOOGLE,
                 "q": query,
-                "num": RESULTS_PER_REQUEST_GOOGLE, # Google giới hạn tối đa 10/lần
+                "num": RESULTS_PER_REQUEST_GOOGLE,  # Google giới hạn tối đa 10/lần
                 "start": start,
                 "dateRestrict": date_restrict,
             }
@@ -41,12 +44,22 @@ class GoogleSearch:
                 if r.ok:
                     items = r.json().get("items", [])
                     for item in items:
-                        results.append({
-                            "title": item.get("title", ""),
-                            "link": item.get("link", ""),
-                            "snippet": item.get("snippet", ""),
-                            "vietsub": self.translator.translate_using_gemini(text=item.get("snippet", ""))
-                        })
+                        results.append(
+                            {
+                                "title": item.get("title", ""),
+                                "link": item.get("link", ""),
+                                "snippet": item.get("snippet", ""),
+                                "vietsub": (
+                                    self.translator.translate_using_gemini(
+                                        text=item.get("snippet", "")
+                                    ) 
+                                    if GEMINI_FOR_TRANSLATE
+                                    else self.translator.translate_using_api(
+                                        text=item.get("snippet", "")
+                                    )
+                                ),
+                            }
+                        )
                 else:
                     logger.error(f"[GOOGLE SEARCH] API error: {r.status_code}")
                     traceback.print_exc()

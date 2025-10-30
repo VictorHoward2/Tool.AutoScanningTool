@@ -6,6 +6,7 @@ from config.settings import *
 from core.translator import Translator
 from bs4 import BeautifulSoup
 
+
 class RSSSearch:
     def __init__(self):
         self.scraper = cloudscraper.create_scraper()
@@ -27,12 +28,30 @@ class RSSSearch:
                     continue
 
                 if pub >= duration:
-                    recent_posts.append({
-                        "title": entry.get("title"),
-                        "link": entry.get("link"),
-                        "published": pub.isoformat(),
-                        "snippet": entry.get("summary", ""),
-                        "vietsub": self.translator.translate_using_gemini(text=html.escape(BeautifulSoup(entry.get("summary", ""), "html.parser").get_text()))
-                    })
+                    recent_posts.append(
+                        {
+                            "title": entry.get("title"),
+                            "link": entry.get("link"),
+                            "published": pub.isoformat(),
+                            "snippet": entry.get("summary", ""),
+                            "vietsub": (
+                                self.translator.translate_using_gemini(
+                                    text=html.escape(
+                                        BeautifulSoup(
+                                            entry.get("summary", ""), "html.parser"
+                                        ).get_text()
+                                    )
+                                )
+                                if GEMINI_FOR_TRANSLATE
+                                else self.translator.translate_using_api(
+                                    text=html.escape(
+                                        BeautifulSoup(
+                                            entry.get("summary", ""), "html.parser"
+                                        ).get_text()
+                                    )
+                                )
+                            ),
+                        }
+                    )
 
         return recent_posts
