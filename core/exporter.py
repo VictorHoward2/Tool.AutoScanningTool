@@ -124,18 +124,7 @@ def classify_security_article(content: str,
     return result[:top_n]
 
 
-def export_to_html_vn(data, service, output_path="output"):
-    # Ngày hôm nay
-    filepath = os.path.join(OUTPUT_PATH, f"results_{NOW}_{DURATION}days_{service}_VI.html")
-    if service == RSS:
-        category = "Security News"
-    else:
-        category = "Kết Quả Scan " + service
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-
-    # === CSS hiện đại, kiểu đọc báo ===
-    css = """
+CSS_TEMPLATE = """
     body {
         font-family: "Inter", "Segoe UI", sans-serif;
         background: #f5f6fa;
@@ -241,16 +230,14 @@ def export_to_html_vn(data, service, output_path="output"):
         background: #1a73e8;
         color: #fff;
     }
-    """
+"""
 
-    # === JavaScript để lọc theo category ===
-    js = """
+JS_TEMPLATE = """
     function filterArticles(category) {
         const articles = document.querySelectorAll('article');
         const buttons = document.querySelectorAll('.filter-btn');
         buttons.forEach(btn => btn.classList.remove('active'));
         document.getElementById(category).classList.add('active');
-
         articles.forEach(article => {
             if (category === 'all' || article.dataset.categories.includes(category)) {
                 article.style.display = 'block';
@@ -259,12 +246,17 @@ def export_to_html_vn(data, service, output_path="output"):
             }
         });
     }
-    """
+"""
 
-    # === Lấy danh sách tất cả category ===
+def _build_filter_buttons(all_categories: set):
+    filter_buttons = '<button id="all" class="filter-btn active" onclick="filterArticles(\'all\')">All</button>'
+    for c in sorted(all_categories):
+        filter_buttons += f'<button id="{c}" class="filter-btn" onclick="filterArticles(\'{c}\')">{c}</button>'
+    return filter_buttons
+
+def _render_articles_html(data, lang="vi"):
+    # Returns (articles_html, all_categories_set)
     all_categories = set()
-
-    # Sinh nội dung từng article
     articles_html = ""
     for idx, item in enumerate(data, start=1):
         title = item.get("title", "No Title")
@@ -275,15 +267,29 @@ def export_to_html_vn(data, service, output_path="output"):
         summary = item.get("summary", "") if "summary" in item else ""
         related = item.get("related", "") if "related" in item else ""
         extract_info = item.get("extract", "") if "extract" in item else ""
-
-        # gọi hàm phân loại
         categories_raw = classify_security_article(f"{title} {snippet}")
         categories = [c[0] if isinstance(c, tuple) else c for c in categories_raw]
         for c in categories:
             all_categories.add(c)
-
         tags_html = "".join(f'<span class="tag">{c}</span>' for c in categories)
         title_html = f'<a href="{link}">{title}</a>' if link else title
+
+        # labels: support both lang
+        if lang == "vi":
+            viet_label = "Dịch tiếng Việt:"
+            sum_label = "Tóm tắt:"
+            rel_label = f"Có liên quan đến chủ đề {TOPIC_KEYWORD}:"
+            ext_label = "Các thông tin hữu ích:"
+        else:
+            viet_label = ""
+            sum_label = "Summary:"
+            rel_label = f"Related to topic {TOPIC_KEYWORD}:"
+            ext_label = "Useful info:"
+        vietnamese_line = f'<p class="translation-label">{viet_label}</p><p class="translation">{vietsub}</p>' if vietsub else ""
+        summary_line = f'<p class="translation-label">{sum_label}</p><p class="translation">{summary}</p>'
+        # related/extract
+        related_line = f'<p class="translation-label">{rel_label}</p><p class="translation">{related}</p>' if related else ""
+        extract_line = f'<p class="translation-label">{ext_label}</p><p class="translation">{extract_info}</p>' if extract_info else ""
 
         article_html = f"""
         <article data-categories="{' '.join(categories)}">
@@ -291,253 +297,56 @@ def export_to_html_vn(data, service, output_path="output"):
         <h2>{idx}. {title_html}</h2>
         <div class="meta">{published}</div>
         <p class="snippet">{snippet}</p>
-        <p class="translation-label"> Dịch tiếng Việt:</p>
-        <p class="translation">{vietsub}</p>
-        <p class="translation-label">Tóm tắt:</p>
-        <p class="translation">{summary}</p>
-        <p class="translation-label">Có liên quan đến chủ đề {TOPIC_KEYWORD}:</p>
-        <p class="translation">{related}</p>
-        <p class="translation-label">Các thông tin hữu ích:</p>
-        <p class="translation">{extract_info}</p>
+        {vietnamese_line}
+        {summary_line}
+        {related_line}
+        {extract_line}
         </article>
         """
         articles_html += article_html
+    return articles_html, all_categories
 
-    # === Thanh lọc category ===
-    filter_buttons = '<button id="all" class="filter-btn active" onclick="filterArticles(\'all\')">All</button>'
-    for c in sorted(all_categories):
-        filter_buttons += f'<button id="{c}" class="filter-btn" onclick="filterArticles(\'{c}\')">{c}</button>'
-
-    # === Khung HTML tổng ===
-    html = f"""<!DOCTYPE html>
-        <html lang="vi">
-        <head>
-            <meta charset="UTF-8">
-            <title>{category}</title>
-            <style>{css}</style>
-        </head>
-        <body>
-            <header>
-                <h1>Báo cáo {category}</h1>
-                <p>Ngày {TODAY} - {DURATION} ngày gần nhất.</p>
-                <p>Thực hiện bởi Scanning Tool</p>
-            </header>
-            <div class="filter-bar">{filter_buttons}</div>
-            <main>
-                {articles_html}
-            </main>
-            <script>{js}</script>
-        </body>
-        </html>
-        """
-
-    # Ghi file
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    logger.info(f"[EXPORT] Xuất dữ liệu {service} bản VI thành công ra {filepath}")
-
-
-def export_to_html_en(data, service, output_path="output"):
-    # Ngày hôm nay
-    filepath = os.path.join(OUTPUT_PATH, f"results_{NOW}_{DURATION}days_{service}_EN.html")
+def export_to_html_template(data, service, lang="vi", output_path="output"):
+    # Định danh
+    filepath = os.path.join(OUTPUT_PATH, f"results_{NOW}_{DURATION}days_{service}_{'VI' if lang=='vi' else 'EN'}.html")
     if service == RSS:
-        category = "Security News"
+        category = "Security News" if lang == "en" else "Security News"
     else:
-        category = service + " Scan Results"
-
+        category = f"Kết Quả Scan {service}" if lang == "vi" else f"{service} Scan Results"
     if not os.path.exists(output_path):
         os.makedirs(output_path)
-
-    # === CSS hiện đại, kiểu đọc báo ===
-    css = """
-    body {
-        font-family: "Inter", "Segoe UI", sans-serif;
-        background: #f5f6fa;
-        margin: 0;
-        padding: 20px;
-        color: #333;
-        background-image: url("https://raw.githubusercontent.com/VictorHoward2/Tool.AutoScanningTool/refs/heads/main/ui/assets/News.png");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }
-    header {
-        max-width: 800px;
-        margin: auto;
-        padding: 20px 0;
-        text-align: center;
-    }
-    header h1 { margin: 0; font-size: 2rem; }
-    header p { color: #666; }
-    main {
-        max-width: 800px;
-        margin: auto;
-        display: grid;
-        gap: 20px;
-    }
-    article {
-        background: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    article:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    article h2 {
-        margin-top: 0;
-        font-size: 1.25rem;
-    }
-    article h2 a {
-        color: #1a73e8;
-        text-decoration: none;
-    }
-    article h2 a:hover {
-        text-decoration: underline;
-    }
-    .meta {
-        font-size: 0.875rem;
-        color: #999;
-        margin-bottom: 10px;
-    }
-    .snippet {
-        line-height: 1.6;
-        white-space: pre-wrap;
-    }
-    .translation-label {
-        font-size: 0.9rem;
-        font-style: italic;
-        color: #555;
-        margin-top: 12px;
-        margin-bottom: 4px;
-    }
-    .translation {
-        background: #f9f9f9;
-        padding: 12px;
-        border-left: 4px solid #1a73e8;
-        border-radius: 6px;
-        line-height: 1.6;
-        font-style: italic;
-        color: #444;
-        white-space: pre-wrap;
-    }
-    .category-tags {
-        margin-bottom: 12px;
-    }
-    .tag {
-        display: inline-block;
-        background: #e8f0fe;
-        color: #1967d2;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        margin-right: 6px;
-        margin-bottom: 4px;
-    }
-    .filter-bar {
-        text-align: center;
-        max-width: 800px;
-        margin: auto;
-        padding: 25px;
-    }
-    .filter-btn {
-        background: #e0e0e0;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 8px;
-        margin: 4px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .filter-btn.active, .filter-btn:hover {
-        background: #1a73e8;
-        color: #fff;
-    }
-    """
-
-    # === JavaScript để lọc theo category ===
-    js = """
-    function filterArticles(category) {
-        const articles = document.querySelectorAll('article');
-        const buttons = document.querySelectorAll('.filter-btn');
-        buttons.forEach(btn => btn.classList.remove('active'));
-        document.getElementById(category).classList.add('active');
-
-        articles.forEach(article => {
-            if (category === 'all' || article.dataset.categories.includes(category)) {
-                article.style.display = 'block';
-            } else {
-                article.style.display = 'none';
-            }
-        });
-    }
-    """
-
-    # === Lấy danh sách tất cả category ===
-    all_categories = set()
-
-    # Sinh nội dung từng article
-    articles_html = ""
-    for idx, item in enumerate(data, start=1):
-        title = item.get("title", "No Title")
-        link = item.get("link", "")
-        published = format_published(item.get("published", ""))
-        snippet = item.get("snippet", "")
-
-        # gọi hàm phân loại
-        categories_raw = classify_security_article(f"{title} {snippet}")
-        categories = [c[0] if isinstance(c, tuple) else c for c in categories_raw]
-        for c in categories:
-            all_categories.add(c)
-
-        tags_html = "".join(f'<span class="tag">{c}</span>' for c in categories)
-        title_html = f'<a href="{link}">{title}</a>' if link else title
-
-        article_html = f"""
-        <article data-categories="{' '.join(categories)}">
-        <div class="category-tags">{tags_html}</div>
-        <h2>{idx}. {title_html}</h2>
-        <div class="meta">{published}</div>
-        <p class="snippet">{snippet}</p>
-        <p class="translation-label">Summary:</p>
-        <p class="translation"> </p>
-        </article>
-        """
-        articles_html += article_html
-
-    # === Thanh lọc category ===
-    filter_buttons = '<button id="all" class="filter-btn active" onclick="filterArticles(\'all\')">All</button>'
-    for c in sorted(all_categories):
-        filter_buttons += f'<button id="{c}" class="filter-btn" onclick="filterArticles(\'{c}\')">{c}</button>'
-
-    # === Khung HTML tổng ===
+    articles_html, all_categories = _render_articles_html(data, lang=lang)
+    filter_buttons = _build_filter_buttons(all_categories)
+    today_label = f"Ngày {TODAY} - {DURATION} ngày gần nhất." if lang=="vi" else f"Update at {TODAY} - The last {DURATION} days."
+    main_header = f"Báo cáo {category}" if lang=="vi" else f"Report {category}"
+    credit = "Thực hiện bởi Scanning Tool" if lang=="vi" else "Performed by Scanning Tool"
     html = f"""<!DOCTYPE html>
-        <html lang="en">
+        <html lang="{'vi' if lang=='vi' else 'en'}">
         <head>
             <meta charset="UTF-8">
             <title>{category}</title>
-            <style>{css}</style>
+            <style>{CSS_TEMPLATE}</style>
         </head>
         <body>
             <header>
-                <h1>Report {category}</h1>
-                <p>Update at {TODAY} - The last {DURATION} days.</p>
-                <p>Performed by Scanning Tool</p>
+                <h1>{main_header}</h1>
+                <p>{today_label}</p>
+                <p>{credit}</p>
             </header>
             <div class="filter-bar">{filter_buttons}</div>
             <main>
                 {articles_html}
             </main>
-            <script>{js}</script>
+            <script>{JS_TEMPLATE}</script>
         </body>
         </html>
         """
-
-    # Ghi file
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(html)
+    logger.info(f"[EXPORT] Xuất dữ liệu {service} bản {'VI' if lang == 'vi' else 'EN'} thành công ra {filepath}")
 
-    logger.info(f"[EXPORT] Xuất dữ liệu {service} bản EN thành công ra {filepath}")
+def export_to_html_vn(data, service, output_path="output"):
+    return export_to_html_template(data, service, lang="vi", output_path=output_path)
+
+def export_to_html_en(data, service, output_path="output"):
+    return export_to_html_template(data, service, lang="en", output_path=output_path)
