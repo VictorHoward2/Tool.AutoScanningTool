@@ -271,7 +271,10 @@ def export_to_html_vn(data, service, output_path="output"):
         link = item.get("link", "")
         published = format_published(item.get("published", ""))
         snippet = item.get("snippet", "")
-        vietsub = item.get("vietsub", "")
+        vietsub = item.get("vietsub", "") if "vietsub" in item else ""
+        summary = item.get("summary", "") if "summary" in item else ""
+        related = item.get("related", "") if "related" in item else ""
+        extract_info = item.get("extract", "") if "extract" in item else ""
 
         # gọi hàm phân loại
         categories_raw = classify_security_article(f"{title} {snippet}")
@@ -291,7 +294,11 @@ def export_to_html_vn(data, service, output_path="output"):
         <p class="translation-label"> Dịch tiếng Việt:</p>
         <p class="translation">{vietsub}</p>
         <p class="translation-label">Tóm tắt:</p>
-        <p class="translation"> </p>
+        <p class="translation">{summary}</p>
+        <p class="translation-label">Có liên quan đến chủ đề {TOPIC_KEYWORD}:</p>
+        <p class="translation">{related}</p>
+        <p class="translation-label">Các thông tin hữu ích:</p>
+        <p class="translation">{extract_info}</p>
         </article>
         """
         articles_html += article_html

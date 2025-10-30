@@ -5,34 +5,34 @@ from utils.time_utils import get_previous_date
 # Modules settings
 IS_TRANSLATE_QUERY = False
 
-IS_GOOGLE = False
-IS_SUMMARIZE_GOOGLE = False
-IS_EXTRACT_GOOGLE = False
+IS_GOOGLE = True
+IS_SUMMARIZE_GOOGLE = True
+IS_EXTRACT_GOOGLE = True
 
-IS_YOUTUBE = False
-IS_SUMMARIZE_YOUTUBE = False
-IS_EXTRACT_YOUTUBE = False
+IS_YOUTUBE = True
+IS_SUMMARIZE_YOUTUBE = True
+IS_EXTRACT_YOUTUBE = True
 
-IS_RSS = True
+IS_RSS = False
 IS_SUMMARIZE_RSS = False
 IS_EXTRACT_RSS = False
 
-GEMINI_FOR_TRANSLATE = False
-GEMINI_FOR_GOOGLE = False
-GEMINI_FOR_YOUTUBE = False
-GEMINI_FOR_RSS = False
+GEMINI_FOR_TRANSLATE = True
+GEMINI_FOR_GOOGLE = True
+GEMINI_FOR_YOUTUBE = True
+GEMINI_FOR_RSS = True
 
 # Scan settings
-TOPIC_KEYWORD = "LLM"  # các thông tin muốn trích xuất
-QUERY = "Cybersecurity LLM"  # default: EN
-# DEMANDS = [
-#     "Tên thiết bị hoặc tên dòng máy liên quan đến từ khóa, càng nhiều thông tin chi tiết càng tốt",
-#     "Tên công cụ (tool) hoặc tên phần mềm hoặc phương thức được dùng để thực hiện",
-#     "Cách thức thực hiện (hướng dẫn ngắn gọn nếu có)",
-#     "Điều kiện cần thiết hoặc lưu ý khi thực hiện",
-#     "Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa",
-# ]
-DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
+TOPIC_KEYWORD = "Network Unlock - dịch vụ gỡ khóa mạng (mở SIM lock) trên điện thoại để thiết bị có thể sử dụng SIM của bất kỳ nhà mạng nào thay vì bị khóa với một nhà mạng cố định. Đặc biệt quan tâm Network Unlock cho các điện thoại Samsung."  # các thông tin muốn trích xuất
+QUERY = "Network Unlock Samsung"  # default: EN
+DEMANDS = [
+    "Tên thiết bị hoặc tên dòng máy Samsung liên quan đến từ khóa, càng nhiều thông tin chi tiết càng tốt",
+    "Tên công cụ (tool) hoặc tên phần mềm hoặc phương thức được dùng để thực hiện",
+    "Cách thức thực hiện (hướng dẫn ngắn gọn nếu có)",
+    "Điều kiện cần thiết hoặc lưu ý khi thực hiện",
+    "Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa",
+]
+# DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
 DURATION = 7  # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
@@ -48,7 +48,8 @@ LANGUAGES = ["en", "es", "fr", "de", "pt", "th"]
 TIMEOUT = 30
 
 # AI settings
-DEFAULT_MODEL = "gemma3:270m"
+DEFAULT_MODEL_GEMINI = "gemini-2.5-flash"
+DEFAULT_MODEL_OLLAMA = "gemma3:270m"
 # AI_MODELS = ["gemma3:1b", "granite3.2:2b", "qwen3:0.6b", "deepseek-r1:1.5b", "llama3.2:1b"]
 AI_MODELS = ["llama3.1:8b"]
 NUMBER_WORDS_SUMMARIZE = 200
