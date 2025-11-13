@@ -79,7 +79,7 @@ class AIProcessor:
         else:
             return f"[AI PROCESS][OLLAMA] Lỗi: {response.status_code} - {response.text}"
 
-    def summarize_content_gemini(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+    def summarize_content_gemini_vn(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             f"Bạn là một chuyên gia phân tích và tóm tắt văn bản. "
             f"Nhiệm vụ của bạn: hãy viết một bản tóm tắt bằng tiếng Việt, "
@@ -96,7 +96,7 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
-    def summarize_content_ollama(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
+    def summarize_content_ollama_vn(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
             f"Tiêu đề: {title}\n"
             f"Đoạn trích: {snippet}\n"
@@ -111,7 +111,7 @@ class AIProcessor:
         )
         return self._call_ollama(prompt, model)
 
-    def summarize_description_gemini(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+    def summarize_description_gemini_vn(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             f"Bạn là một chuyên gia phân tích và tóm tắt nội dung video. "
             f"Bạn sẽ được cung cấp tiêu đề, mô tả và link của một video YouTube để tóm tắt lại các thông tin. "
@@ -130,7 +130,7 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
-    def summarize_description_ollama(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
+    def summarize_description_ollama_vn(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
             f"Tiêu đề video: {title}\n"
             f"Mô tả video: {snippet}\n"
@@ -146,7 +146,7 @@ class AIProcessor:
         )
         return self._call_ollama(prompt, model)
 
-    def is_related_gemini(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_GEMINI):
+    def is_related_gemini_vn(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             "Bạn là một chuyên gia đánh giá nội dung. "
             "Nhiệm vụ: dựa trên những thông tin được cung cấp (Gồm: title, snippet và link URL), "
@@ -163,7 +163,7 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="evaluate", title=title, model=model)
 
-    def is_related_ollama(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_OLLAMA):
+    def is_related_ollama_vn(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
             f"Tiêu đề: {title}\nĐoạn trích: {snippet}\nLink: {link}\nTừ khóa của chủ đề: {topic_key}\n\n"
             "Bạn là một chuyên gia đánh giá nội dung. "
@@ -179,7 +179,7 @@ class AIProcessor:
         )
         return self._call_ollama(prompt, model)
 
-    def extract_info_gemini(self, topic_key, text, model=DEFAULT_MODEL_GEMINI):
+    def extract_info_gemini_vn(self, topic_key, text, model=DEFAULT_MODEL_GEMINI):
         if text == "":
             return ""
         demands_text = "".join([f"    {i+1}. {d}\n" for i, d in enumerate(DEMANDS)])
@@ -200,7 +200,7 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="extract info", model=model)
 
-    def extract_info_ollama(self, topic_key, text, model=DEFAULT_MODEL_OLLAMA):
+    def extract_info_ollama_vn(self, topic_key, text, model=DEFAULT_MODEL_OLLAMA):
         if text == "":
             return ""
         demands_text = "".join([f"    {i+1}. {d}\n" for i, d in enumerate(DEMANDS)])
@@ -230,7 +230,7 @@ class AIProcessor:
                 if (service == GOOGLE and IS_SUMMARIZE_GOOGLE) or (service == RSS and IS_SUMMARIZE_RSS):
                     if (service == GOOGLE and GEMINI_FOR_GOOGLE) or (service == RSS and GEMINI_FOR_RSS):
                         item["summary"] = self.strip_thoughts(
-                            self.summarize_content_gemini(
+                            self.summarize_content_gemini_vn(
                                 item["title"],
                                 item["snippet"],
                                 item["link"],
@@ -239,7 +239,7 @@ class AIProcessor:
                         )
                     else:
                         item["summary"] = self.strip_thoughts(
-                            self.summarize_content_ollama(
+                            self.summarize_content_ollama_vn(
                                 item["title"],
                                 item["snippet"],
                                 item["link"],
@@ -250,7 +250,7 @@ class AIProcessor:
                 # Lấy kết quả đánh giá từ các mô hình
                 if (IS_EXTRACT_GOOGLE and service == GOOGLE) or (IS_EXTRACT_RSS and service == RSS):
                     if (service == GOOGLE and GEMINI_FOR_GOOGLE) or (service == RSS and GEMINI_FOR_RSS):
-                        opinion = self.strip_thoughts(self.is_related_gemini(key,item["title"],item["snippet"],item["link"],))
+                        opinion = self.strip_thoughts(self.is_related_gemini_vn(key,item["title"],item["snippet"],item["link"],))
                         try:
                             opinion_value = int(opinion)
                         except ValueError:
@@ -260,18 +260,18 @@ class AIProcessor:
                         elif opinion_value == 1:
                             item["related"] = "Có"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_gemini(key, item["content"])
+                                self.extract_info_gemini_vn(key, item["content"])
                             )
                         else:
                             item["related"] = "Không biết"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_gemini(key, item["content"])
+                                self.extract_info_gemini_vn(key, item["content"])
                             )
                     else:
                         opinions = []
                         for model in AI_MODELS:
                             opinion = self.strip_thoughts(
-                                self.is_related_ollama(
+                                self.is_related_ollama_vn(
                                     key,
                                     item["title"],
                                     item["snippet"],
@@ -296,12 +296,12 @@ class AIProcessor:
                         elif valmax == 1:
                             item["related"] = "Có"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_ollama(key, item["content"])
+                                self.extract_info_ollama_vn(key, item["content"])
                             )
                         else:
                             item["related"] = "Không biết"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_ollama(key, item["content"])
+                                self.extract_info_ollama_vn(key, item["content"])
                             )
             except Exception as e:
                 logger.error(f"[AI PROCESS] Đã xảy ra lỗi: {e}")
@@ -320,13 +320,13 @@ class AIProcessor:
                 if IS_SUMMARIZE_YOUTUBE:
                     if GEMINI_FOR_YOUTUBE:
                         item["summary"] = self.strip_thoughts(
-                            self.summarize_description_gemini(
+                            self.summarize_description_gemini_vn(
                                 item["title"], item["snippet"], item["link"]
                             )
                         )
                     else:
                         item["summary"] = self.strip_thoughts(
-                            self.summarize_description_ollama(
+                            self.summarize_description_ollama_vn(
                                 item["title"], item["snippet"], item["link"]
                             )
                         )
@@ -334,7 +334,7 @@ class AIProcessor:
                 # Lấy kết quả đánh giá từ các mô hình
                 if IS_EXTRACT_YOUTUBE:
                     if GEMINI_FOR_YOUTUBE:
-                        opinion = self.strip_thoughts(self.is_related_gemini(key,item["title"],item["snippet"],item["link"]))
+                        opinion = self.strip_thoughts(self.is_related_gemini_vn(key,item["title"],item["snippet"],item["link"]))
                         try:
                             opinion_value = int(opinion)
                         except ValueError:
@@ -344,18 +344,18 @@ class AIProcessor:
                         elif opinion_value == 1:
                             item["related"] = "Có"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_gemini(key, item["snippet"])
+                                self.extract_info_gemini_vn(key, item["snippet"])
                             )
                         else:
                             item["related"] = "Không biết"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_gemini(key, item["snippet"])
+                                self.extract_info_gemini_vn(key, item["snippet"])
                             )
                     else:
                         opinions = []
                         for model in AI_MODELS:
                             opinion = self.strip_thoughts(
-                                self.is_related_ollama(
+                                self.is_related_ollama_vn(
                                     key,
                                     item["title"],
                                     item["snippet"],
@@ -380,12 +380,12 @@ class AIProcessor:
                         elif valmax == 1:
                             item["related"] = "Có"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_ollama(key, item["snippet"])
+                                self.extract_info_ollama_vn(key, item["snippet"])
                             )
                         else:
                             item["related"] = "Không biết"
                             item["extract"] = self.strip_thoughts(
-                                self.extract_info_ollama(key, item["snippet"])
+                                self.extract_info_ollama_vn(key, item["snippet"])
                             )
 
             except Exception as e:
@@ -393,7 +393,7 @@ class AIProcessor:
                 traceback.print_exc()
         return results
 
-    def summarize_overview_gemini(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+    def summarize_overview_gemini_vn(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             f"Bạn là một chuyên gia phân tích và tóm tắt văn bản. "
             f"Nhiệm vụ của bạn: hãy viết một bản báo cáo tổng quát bằng tiếng Việt, "
@@ -407,5 +407,22 @@ class AIProcessor:
         user_prompt = (
             f"Nội dung: {all_content}\n\n"
             f"Hãy tóm tắt nội dung trên cho tôi."
+        )
+        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize all")
+    
+    def summarize_overview_gemini_en(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        system_instruction = (
+            f"You are an expert in analyzing and summarizing text. "
+            f"Your task: write a general report in English, "
+            f"easy to understand, full of main ideas, avoid rambling, maximum {num_words} words. "
+            f"The results should be written as a continuous paragraph. Do not write in markdown file."
+        )
+        all_content = ""
+        for idx, item in enumerate(results, 1):
+            all_content += f"[{idx}] {item.get('title', '')}\n {item.get('snippet', '')}\n {item.get('link', '')}\n\n"
+
+        user_prompt = (
+            f"Content: {all_content}\n\n"
+            f"Please summarize the above content for me."
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize all")

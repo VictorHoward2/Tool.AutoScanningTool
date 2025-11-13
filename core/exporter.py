@@ -323,7 +323,7 @@ def export_to_html_template(data, service, lang="vi"):
 
     if service == RSS:
         category = "Security News" if lang == "en" else "Security News"
-        sumary_overview = AIProcessor().summarize_overview_gemini(data)
+        sumary_overview = AIProcessor().summarize_overview_gemini_vn(data)
         sumary_overview_line = f'''
         <article class="translation-label">
             <h2>{"Tổng Quan" if lang == "vi" else "Overview"}:</h2>
@@ -483,7 +483,7 @@ def export_to_html_bilingual(data, service, default_lang="vi", output_path="outp
     # Optional overview (similar behavior as export_to_html_template)
     if service == RSS:
         try:
-            sumary_overview = AIProcessor().summarize_overview_gemini(data)
+            sumary_overview = AIProcessor().summarize_overview_gemini_vn(data)
         except Exception:
             sumary_overview = ""
         sumary_overview_line = f'''
