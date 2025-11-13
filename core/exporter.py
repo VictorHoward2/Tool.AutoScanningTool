@@ -124,7 +124,6 @@ def classify_security_article(content: str,
 
     return result[:top_n]
 
-
 CSS_TEMPLATE = """
     body {
         font-family: "Inter", "Segoe UI", sans-serif;
@@ -265,19 +264,22 @@ def _render_articles_html(data, lang="vi"):
     # Returns (articles_html, all_categories_set)
     all_categories = set()
     articles_html = ""
+
     for idx, item in enumerate(data, start=1):
         title = item.get("title", "No Title")
         link = item.get("link", "")
         published = format_published(item.get("published", ""))
         snippet = item.get("snippet", "")
         vietsub = item.get("vietsub", "") if "vietsub" in item else ""
-        summary = item.get("summary", "") if "summary" in item else ""
+        summary_vi = item.get("summary_vi", "") if "summary_vi" in item else ""
+        summary_en = item.get("summary_en", "") if "summary_en" in item else ""
         related = item.get("related", "") if "related" in item else ""
         extract_info = item.get("extract", "") if "extract" in item else ""
         categories_raw = classify_security_article(f"{title} {snippet}")
         categories = [c[0] if isinstance(c, tuple) else c for c in categories_raw]
         for c in categories:
             all_categories.add(c)
+
         tags_html = "".join(f'<span class="tag">{c}</span>' for c in categories)
         title_html = f'<a href="{link}">{title}</a>' if link else title
 
@@ -287,11 +289,13 @@ def _render_articles_html(data, lang="vi"):
             sum_label = "Tóm tắt:"
             rel_label = f"Có liên quan đến chủ đề {TOPIC_KEYWORD}:"
             ext_label = "Các thông tin hữu ích:"
+            summary = summary_vi
         else:
             viet_label = ""
             sum_label = "Summary:"
             rel_label = f"Related to topic {TOPIC_KEYWORD}:"
             ext_label = "Useful info:"
+            summary = summary_en
         vietnamese_line = f'<p class="translation-label">{viet_label}</p><p class="translation">{vietsub}</p>' if vietsub else ""
         summary_line = f'<p class="translation-label">{sum_label}</p><p class="translation">{summary}</p>'
         # related/extract
@@ -323,11 +327,12 @@ def export_to_html_template(data, service, lang="vi"):
 
     if service == RSS:
         category = "Security News" if lang == "en" else "Security News"
-        sumary_overview = AIProcessor().summarize_overview_gemini_vn(data)
+        sumary_overview_vi = AIProcessor().summarize_overview_gemini_vi(data)
+        sumary_overview_en = AIProcessor().summarize_overview_gemini_en(data)
         sumary_overview_line = f'''
         <article class="translation-label">
             <h2>{"Tổng Quan" if lang == "vi" else "Overview"}:</h2>
-            <p class="snippet">{sumary_overview}</p>
+            <p class="snippet">{sumary_overview_vi if lang == "vi" else sumary_overview_en}</p>
         </article>'''
     else:
         category = f"Kết Quả Scan {service}" if lang == "vi" else f"{service} Scan Results"
@@ -364,7 +369,7 @@ def export_to_html_template(data, service, lang="vi"):
         f.write(html)
     logger.info(f"[EXPORT] Xuất dữ liệu {service} bản {'VI' if lang == 'vi' else 'EN'} thành công ra {filepath}")
 
-def export_to_html_vn(data, service, output_path="output"):
+def export_to_html_vi(data, service, output_path="output"):
     return export_to_html_template(data, service, lang="vi")
 
 def export_to_html_en(data, service, output_path="output"):
@@ -385,7 +390,8 @@ def _render_bilingual_articles_html(data):
         published = format_published(item.get("published", ""))
         snippet = item.get("snippet", "")
         vietsub = item.get("vietsub", "") if "vietsub" in item else ""
-        summary = item.get("summary", "") if "summary" in item else ""
+        summary_vi = item.get("summary_vi", "") if "summary_vi" in item else ""
+        summary_en = item.get("summary_en", "") if "summary_en" in item else ""
         related = item.get("related", "") if "related" in item else ""
         extract_info = item.get("extract", "") if "extract" in item else ""
 
@@ -399,27 +405,26 @@ def _render_bilingual_articles_html(data):
 
         # Build bilingual pieces. For EN/VI labels we keep them inline.
         # Title: if link exists wrap both with same link
-        title_html_vi = f'<a href="{link}">{title}</a>' if link else title
-        title_html_en = title_html_vi  # if you have separate english titles, replace here
+        title_html = f'<a href="{link}">{title}</a>' if link else title
 
         # For now we assume summary/snippet/vietsub already are appropriate language fields
-        viet_line = f'''
-            <div class="lang-vi lang-block">
-                <h2>{idx}. {title_html_vi}</h2>
+        viet_article = f'''
+            <div class="lang-vi">
+                <h2>{idx}. {title_html}</h2>
                 <div class="meta">{published}</div>
                 <p class="snippet">{snippet}</p>
                 {f'<p class="translation-label">Dịch tiếng Việt:</p><p class="translation">{vietsub}</p>' if vietsub else ""}
-                <p class="translation-label">Tóm tắt:</p><p class="translation">{summary}</p>
+                <p class="translation-label">Tóm tắt:</p><p class="translation">{summary_vi}</p>
                 {f'<p class="translation-label">Có liên quan đến chủ đề {TOPIC_KEYWORD}:</p><p class="translation">{related}</p>' if related else ""}
                 {f'<p class="translation-label">Các thông tin hữu ích:</p><p class="translation">{extract_info}</p>' if extract_info else ""}
             </div>
         '''
-        en_line = f'''
-            <div class="lang-en lang-block" style="display:none">
-                <h2>{idx}. {title_html_en}</h2>
+        en_article = f'''
+            <div class="lang-en" style="display:none">
+                <h2>{idx}. {title_html}</h2>
                 <div class="meta">{published}</div>
                 <p class="snippet">{snippet}</p>
-                {f'<p class="translation-label">Summary:</p><p class="translation">{summary}</p>'}
+                {f'<p class="translation-label">Summary:</p><p class="translation">{summary_en}</p>'}
                 {f'<p class="translation-label">Related to topic {TOPIC_KEYWORD}:</p><p class="translation">{related}</p>' if related else ""}
                 {f'<p class="translation-label">Useful info:</p><p class="translation">{extract_info}</p>' if extract_info else ""}
             </div>
@@ -428,13 +433,12 @@ def _render_bilingual_articles_html(data):
         article_html = f"""
         <article data-categories="{data_categories_attr}">
             <div class="category-tags">{tags_html}</div>
-            {viet_line}
-            {en_line}
+            {viet_article}
+            {en_article}
         </article>
         """
         articles_html += article_html
     return articles_html, all_categories
-
 
 # JS to add language switcher (we append to existing JS_TEMPLATE)
 LANG_SWITCHER_JS = """
@@ -469,7 +473,6 @@ def _build_language_switcher(default_lang="vi"):
     '''
     return switcher_html
 
-
 def export_to_html_bilingual(data, service, default_lang="vi", output_path="output"):
     """
     Tạo 1 file HTML chứa cả nội dung Tiếng Việt và Tiếng Anh và 1 control để đổi ngôn ngữ.
@@ -482,14 +485,14 @@ def export_to_html_bilingual(data, service, default_lang="vi", output_path="outp
 
     # Optional overview (similar behavior as export_to_html_template)
     if service == RSS:
-        try:
-            sumary_overview = AIProcessor().summarize_overview_gemini_vn(data)
-        except Exception:
-            sumary_overview = ""
+        sumary_overview_vi = AIProcessor().summarize_overview_gemini_vi(data)
+        sumary_overview_en = AIProcessor().summarize_overview_gemini_en(data)
         sumary_overview_line = f'''
         <article class="translation-label">
-            <h2>{"Tổng Quan" if default_lang=="vi" else "Overview"}:</h2>
-            <p class="snippet">{sumary_overview}</p>
+            <h2 class="lang-vi">{'Tổng Quan'}:</h2>
+            <h2 class="lang-en" style="display:none">{'Overview'}:</h2>
+            <p class="snippet lang-vi" >{sumary_overview_vi}</p>
+            <p class="snippet lang-en" style="display:none">{sumary_overview_en}</p>
         </article>'''
     else:
         sumary_overview_line = ""
@@ -501,9 +504,12 @@ def export_to_html_bilingual(data, service, default_lang="vi", output_path="outp
     filter_buttons = _build_filter_buttons(all_categories)
     lang_switcher = _build_language_switcher(default_lang)
 
-    today_label = f"Ngày {TODAY} - {DURATION} ngày gần nhất." if default_lang=="vi" else f"Update at {TODAY} - The last {DURATION} days."
-    main_header = f"Báo cáo {service}" if default_lang=="vi" else f"Report {service}"
-    credit = "Thực hiện bởi Scanning Tool" if default_lang=="vi" else "Performed by Scanning Tool"
+    today_label_vi = f'<p class="lang-vi">Ngày {TODAY} - {DURATION} ngày gần nhất.</p>'
+    today_label_en = f'<p class="lang-en" style="display:none">Update at {TODAY} - The last {DURATION} days.</p>'
+    main_header_vi = f'<h1 class="lang-vi">Báo cáo {service}</h1>'
+    main_header_en = f'<h1 class="lang-en" style="display:none">Report {service}</h1>'
+    credit_vi = '<p class="lang-vi">Thực hiện bởi Scanning Tool</p>' 
+    credit_en = '<p class="lang-en" style="display:none">Performed by Scanning Tool</p>'
 
     # Compose final HTML: CSS_TEMPLATE already exists; combine JS_TEMPLATE + LANG_SWITCHER_JS
     combined_js = JS_TEMPLATE + "\n" + LANG_SWITCHER_JS
@@ -512,14 +518,17 @@ def export_to_html_bilingual(data, service, default_lang="vi", output_path="outp
         <html lang="{'vi' if default_lang=='vi' else 'en'}">
         <head>
             <meta charset="UTF-8">
-            <title>{main_header}</title>
+            <title>Report {service}</title>
             <style>{CSS_TEMPLATE}</style>
         </head>
         <body>
             <header>
-                <h1>{main_header}</h1>
-                <p>{today_label}</p>
-                <p>{credit}</p>
+                {main_header_vi}
+                {main_header_en}
+                {today_label_vi}
+                {today_label_en}
+                {credit_vi}
+                {credit_en}
             </header>
 
             <div class="filter-bar">

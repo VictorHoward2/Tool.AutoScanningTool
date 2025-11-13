@@ -70,13 +70,13 @@ def main():
     logger.info("[MAIN] Phase 5: Export")
     if IS_GOOGLE:
         export_to_excel(results_google, GOOGLE)
-        export_to_html_vn(results_google, GOOGLE)
+        export_to_html_vi(results_google, GOOGLE)
     if IS_YOUTUBE:
         export_to_excel(results_youtube, YOUTUBE)
-        export_to_html_vn(results_youtube, YOUTUBE)
+        export_to_html_vi(results_youtube, YOUTUBE)
     if IS_RSS:
         export_to_excel(results_rss, RSS)
-        export_to_html_vn(results_rss, RSS)
+        export_to_html_vi(results_rss, RSS)
         export_to_html_en(results_rss, RSS)
         export_to_html_bilingual(results_rss, RSS)
 

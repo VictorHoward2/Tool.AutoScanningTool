@@ -35,7 +35,7 @@ DEMANDS = [
 # DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 7  # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 3  # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 NOW = str(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
 PUBLISHED_FROM = get_previous_date(day=DURATION)
@@ -76,17 +76,16 @@ URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 #            "https://cyberscoop.com/feed/",
 #            "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
-RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.securityweek.com/feed/", "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+# RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.securityweek.com/feed/", "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
+RSS_URL = ["https://unit42.paloaltonetworks.com/feed/"]
 # CONSTANTS
 GOOGLE = "Google"
 YOUTUBE = "Youtube"
 RSS = "RSS"
 
 GEMINI_API_KEYS = [
-    "AIzaSyAEl2kVpNIz0u9ExJbpjk3gqJxHS7gSXTk",
-    "AIzaSyAugYbgc1xMqYYGW2NX7ICbehUPJdaed6g",
-    "AIzaSyBf-eIa26TY9GpUxsssCQ693kEsDkYjYY0",
+    
     "AIzaSyBJ9C7S1BnXi6gORnq19HiS8WhNo7-6Jk0",
     "AIzaSyBw423k9HuUhaHbgzkRt09nEw9__ayer6g",
     "AIzaSyD0YhhsFjW9vVMYIMxMYpENWZeBkwORaDQ",
@@ -95,5 +94,8 @@ GEMINI_API_KEYS = [
     "AIzaSyD2hbKvhp0TRHJyV0pc2xXHwz2meNJkUAc",
     "AIzaSyBREMlV8_oZUjPOTRl2siF4Ime2QQdN1eE",
     "AIzaSyCvIColbM8PiY9EQ6GE6EoQtHv5gbL2MoM",
+    "AIzaSyAEl2kVpNIz0u9ExJbpjk3gqJxHS7gSXTk",
+    "AIzaSyAugYbgc1xMqYYGW2NX7ICbehUPJdaed6g",
+    "AIzaSyBf-eIa26TY9GpUxsssCQ693kEsDkYjYY0",
     "AIzaSyCMINjA10a13mDsUs4k2LemwPemC-p_QDU",
 ]
