@@ -369,3 +369,176 @@ def export_to_html_vn(data, service, output_path="output"):
 
 def export_to_html_en(data, service, output_path="output"):
     return export_to_html_template(data, service, lang="en")
+
+def _render_bilingual_articles_html(data):
+    """
+    Trả về (articles_html, all_categories_set)
+    Mỗi <article> chứa hai phần nội dung: .lang-vi và .lang-en
+    data-categories được tạo dựa trên classify_security_article(title + snippet)
+    """
+    all_categories = set()
+    articles_html = ""
+    for idx, item in enumerate(data, start=1):
+        # common fields
+        title = item.get("title", "No Title")
+        link = item.get("link", "")
+        published = format_published(item.get("published", ""))
+        snippet = item.get("snippet", "")
+        vietsub = item.get("vietsub", "") if "vietsub" in item else ""
+        summary = item.get("summary", "") if "summary" in item else ""
+        related = item.get("related", "") if "related" in item else ""
+        extract_info = item.get("extract", "") if "extract" in item else ""
+
+        # Determine categories once (using combined text)
+        categories_raw = classify_security_article(f"{title} {snippet}")
+        categories = [c[0] if isinstance(c, tuple) else c for c in categories_raw]
+        for c in categories:
+            all_categories.add(c)
+        tags_html = "".join(f'<span class="tag">{c}</span>' for c in categories)
+        data_categories_attr = " ".join(categories)
+
+        # Build bilingual pieces. For EN/VI labels we keep them inline.
+        # Title: if link exists wrap both with same link
+        title_html_vi = f'<a href="{link}">{title}</a>' if link else title
+        title_html_en = title_html_vi  # if you have separate english titles, replace here
+
+        # For now we assume summary/snippet/vietsub already are appropriate language fields
+        viet_line = f'''
+            <div class="lang-vi lang-block">
+                <h2>{idx}. {title_html_vi}</h2>
+                <div class="meta">{published}</div>
+                <p class="snippet">{snippet}</p>
+                {f'<p class="translation-label">Dịch tiếng Việt:</p><p class="translation">{vietsub}</p>' if vietsub else ""}
+                <p class="translation-label">Tóm tắt:</p><p class="translation">{summary}</p>
+                {f'<p class="translation-label">Có liên quan đến chủ đề {TOPIC_KEYWORD}:</p><p class="translation">{related}</p>' if related else ""}
+                {f'<p class="translation-label">Các thông tin hữu ích:</p><p class="translation">{extract_info}</p>' if extract_info else ""}
+            </div>
+        '''
+        en_line = f'''
+            <div class="lang-en lang-block" style="display:none">
+                <h2>{idx}. {title_html_en}</h2>
+                <div class="meta">{published}</div>
+                <p class="snippet">{snippet}</p>
+                {f'<p class="translation-label">Summary:</p><p class="translation">{summary}</p>'}
+                {f'<p class="translation-label">Related to topic {TOPIC_KEYWORD}:</p><p class="translation">{related}</p>' if related else ""}
+                {f'<p class="translation-label">Useful info:</p><p class="translation">{extract_info}</p>' if extract_info else ""}
+            </div>
+        '''
+
+        article_html = f"""
+        <article data-categories="{data_categories_attr}">
+            <div class="category-tags">{tags_html}</div>
+            {viet_line}
+            {en_line}
+        </article>
+        """
+        articles_html += article_html
+    return articles_html, all_categories
+
+
+# JS to add language switcher (we append to existing JS_TEMPLATE)
+LANG_SWITCHER_JS = """
+    function switchLanguage(lang) {
+        const viElems = document.querySelectorAll('.lang-vi');
+        const enElems = document.querySelectorAll('.lang-en');
+        const viBtn = document.getElementById('lang-vi-btn');
+        const enBtn = document.getElementById('lang-en-btn');
+
+        if (lang === 'vi') {
+            viElems.forEach(e => e.style.display = '');
+            enElems.forEach(e => e.style.display = 'none');
+            viBtn.classList.add('active');
+            enBtn.classList.remove('active');
+        } else {
+            viElems.forEach(e => e.style.display = 'none');
+            enElems.forEach(e => e.style.display = '');
+            enBtn.classList.add('active');
+            viBtn.classList.remove('active');
+        }
+    }
+"""
+
+def _build_language_switcher(default_lang="vi"):
+    vi_active = "active" if default_lang == "vi" else ""
+    en_active = "active" if default_lang == "en" else ""
+    switcher_html = f'''
+    <div class="lang-switcher" style="text-align:center;margin-bottom:12px;">
+        <button id="lang-vi-btn" class="filter-btn {vi_active}" onclick="switchLanguage('vi')">VI</button>
+        <button id="lang-en-btn" class="filter-btn {en_active}" onclick="switchLanguage('en')">EN</button>
+    </div>
+    '''
+    return switcher_html
+
+
+def export_to_html_bilingual(data, service, default_lang="vi", output_path="output"):
+    """
+    Tạo 1 file HTML chứa cả nội dung Tiếng Việt và Tiếng Anh và 1 control để đổi ngôn ngữ.
+    default_lang: 'vi' hoặc 'en' (vi mặc định)
+    """
+    if not os.path.exists(OUTPUT_PATH):
+        os.makedirs(OUTPUT_PATH)
+
+    filepath = os.path.join(OUTPUT_PATH, f"results_{NOW}_{DURATION}days_{service}_BILINGUAL.html")
+
+    # Optional overview (similar behavior as export_to_html_template)
+    if service == RSS:
+        try:
+            sumary_overview = AIProcessor().summarize_overview_gemini(data)
+        except Exception:
+            sumary_overview = ""
+        sumary_overview_line = f'''
+        <article class="translation-label">
+            <h2>{"Tổng Quan" if default_lang=="vi" else "Overview"}:</h2>
+            <p class="snippet">{sumary_overview}</p>
+        </article>'''
+    else:
+        sumary_overview_line = ""
+
+    # Build bilingual articles and categories
+    articles_html, all_categories = _render_bilingual_articles_html(data)
+
+    # filter buttons use combined categories
+    filter_buttons = _build_filter_buttons(all_categories)
+    lang_switcher = _build_language_switcher(default_lang)
+
+    today_label = f"Ngày {TODAY} - {DURATION} ngày gần nhất." if default_lang=="vi" else f"Update at {TODAY} - The last {DURATION} days."
+    main_header = f"Báo cáo {service}" if default_lang=="vi" else f"Report {service}"
+    credit = "Thực hiện bởi Scanning Tool" if default_lang=="vi" else "Performed by Scanning Tool"
+
+    # Compose final HTML: CSS_TEMPLATE already exists; combine JS_TEMPLATE + LANG_SWITCHER_JS
+    combined_js = JS_TEMPLATE + "\n" + LANG_SWITCHER_JS
+
+    html = f"""<!DOCTYPE html>
+        <html lang="{'vi' if default_lang=='vi' else 'en'}">
+        <head>
+            <meta charset="UTF-8">
+            <title>{main_header}</title>
+            <style>{CSS_TEMPLATE}</style>
+        </head>
+        <body>
+            <header>
+                <h1>{main_header}</h1>
+                <p>{today_label}</p>
+                <p>{credit}</p>
+            </header>
+
+            <div class="filter-bar">
+                {filter_buttons}
+                {lang_switcher}
+            </div>
+
+            <main>
+                {sumary_overview_line}
+                {articles_html}
+            </main>
+
+            <script>{combined_js}</script>
+            <script>switchLanguage('{default_lang}')</script>
+        </body>
+        </html>
+        """
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(html)
+    logger.info(f"[EXPORT] Xuất file bilingual {service} thành công ra {filepath}")
+    return filepath

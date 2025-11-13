@@ -5,16 +5,16 @@ from utils.time_utils import get_previous_date
 # Modules settings
 IS_TRANSLATE_QUERY = False
 
-IS_GOOGLE = True
+IS_GOOGLE = False
 IS_SUMMARIZE_GOOGLE = True
 IS_EXTRACT_GOOGLE = True
 
-IS_YOUTUBE = True
+IS_YOUTUBE = False
 IS_SUMMARIZE_YOUTUBE = True
 IS_EXTRACT_YOUTUBE = True
 
-IS_RSS = False
-IS_SUMMARIZE_RSS = False
+IS_RSS = True
+IS_SUMMARIZE_RSS = True
 IS_EXTRACT_RSS = False
 
 GEMINI_FOR_TRANSLATE = True
@@ -45,7 +45,7 @@ LOG_DIR = os.path.join(os.getcwd(), "data/logs")
 
 # Translate settings
 LANGUAGES = ["en", "es", "fr", "de", "pt", "th"]
-TIMEOUT = 30
+TIMEOUT = 90
 
 # AI settings
 DEFAULT_MODEL_GEMINI = "gemini-2.5-flash"
@@ -76,7 +76,7 @@ URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 #            "https://cyberscoop.com/feed/",
 #            "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
-RSS_URL = ["https://unit42.paloaltonetworks.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.securityweek.com/feed/", "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
 # CONSTANTS
 GOOGLE = "Google"

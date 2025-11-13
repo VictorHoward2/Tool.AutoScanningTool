@@ -78,6 +78,7 @@ def main():
         export_to_excel(results_rss, RSS)
         export_to_html_vn(results_rss, RSS)
         export_to_html_en(results_rss, RSS)
+        export_to_html_bilingual(results_rss, RSS)
 
     logger.info("[MAIN] Scan completed!")
 
