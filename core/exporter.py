@@ -296,7 +296,7 @@ def _render_articles_html(data, lang="vi"):
             rel_label = f"Related to topic {TOPIC_KEYWORD}:"
             ext_label = "Useful info:"
             summary = summary_en
-        vietnamese_line = f'<p class="translation-label">{viet_label}</p><p class="translation">{vietsub}</p>' if vietsub else ""
+        vietnamese_line = f'<p class="translation-label">{viet_label}</p><p class="translation">{vietsub}</p>' if vietsub and lang =="vi" else ""
         summary_line = f'<p class="translation-label">{sum_label}</p><p class="translation">{summary}</p>'
         # related/extract
         related_line = f'<p class="translation-label">{rel_label}</p><p class="translation">{related}</p>' if related else ""
