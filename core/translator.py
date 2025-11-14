@@ -64,12 +64,10 @@ class Translator:
 
             except (google_exceptions.PermissionDenied, google_exceptions.Unauthenticated, google_exceptions.ResourceExhausted) as auth_error:
                 logger.warning(f"[TRANSLATOR][GEMINI] API key {api_key[:4]}... failed (Auth/Permission/Quota Error). Trying next key. Error: {auth_error}")
-                traceback.print_exc()
                 # Tiếp tục vòng lặp để thử key tiếp theo
 
             except Exception as e:
                 logger.error(f"[TRANSLATOR][GEMINI] An unexpected error occurred with key {api_key[:4]}...: {e}")
-                traceback.print_exc()
                 # Vẫn tiếp tục thử key tiếp theo
             
         # Nếu tất cả các key đều thất bại

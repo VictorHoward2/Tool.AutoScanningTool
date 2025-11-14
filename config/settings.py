@@ -35,7 +35,7 @@ DEMANDS = [
 # DEMANDS = ["Bất kỳ thông tin bổ sung hữu ích nào liên quan đến từ khóa chủ đề"]
 
 # General settings
-DURATION = 3  # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
+DURATION = 7  # đơn vị ngày - ví dụ: 30 -> quét 30 ngày gần nhất
 TODAY = str(datetime.today().date())
 NOW = str(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
 PUBLISHED_FROM = get_previous_date(day=DURATION)
@@ -75,10 +75,11 @@ URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 #            "https://www.securityweek.com/feed/",
 #            "https://cyberscoop.com/feed/",
 #            "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+# RSS_URL = ["https://unit42.paloaltonetworks.com/feed/"]
 
-# RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.securityweek.com/feed/", "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.securityweek.com/feed/", "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
-RSS_URL = ["https://unit42.paloaltonetworks.com/feed/"]
+
 # CONSTANTS
 GOOGLE = "Google"
 YOUTUBE = "Youtube"

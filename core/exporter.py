@@ -230,6 +230,41 @@ CSS_TEMPLATE = """
         background: #1a73e8;
         color: #fff;
     }
+    .lang-switcher {
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    .lang-switcher .filter-btn {
+        padding: 10px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        border-radius: 8px;
+        margin: 0 5px;
+        background: #f0f0f0;
+        color: #333;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .lang-switcher .filter-btn:hover {
+        background: #e5e5e5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    }
+
+    .lang-switcher .filter-btn.active {
+        background: #0078ff;
+        color: white;
+        box-shadow: 0 3px 6px rgba(0,120,255,0.3);
+    }
+
+    .lang-switcher .filter-btn.active:hover {
+        background: #0069e0;
+    }
+
 """
 
 JS_TEMPLATE = """
@@ -533,9 +568,11 @@ def export_to_html_bilingual(data, service, default_lang="vi", output_path="outp
 
             <div class="filter-bar">
                 {filter_buttons}
+                
+            </div>
+            <div>
                 {lang_switcher}
             </div>
-
             <main>
                 {sumary_overview_line}
                 {articles_html}
