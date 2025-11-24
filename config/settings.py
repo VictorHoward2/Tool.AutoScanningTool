@@ -77,7 +77,7 @@ URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 #            "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 # RSS_URL = ["https://unit42.paloaltonetworks.com/feed/"]
 
-RSS_URL = ["https://unit42.paloaltonetworks.com/feed/", "https://www.securityweek.com/feed/", "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+RSS_URL = ["https://feeds.feedburner.com/TheHackersNews", "https://www.securityweek.com/feed/", "https://unit42.paloaltonetworks.com/feed/"]  # Thêm nhiều RSS feed nếu cần
 
 
 # CONSTANTS

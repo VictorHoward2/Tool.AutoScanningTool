@@ -541,8 +541,8 @@ def export_to_html_bilingual(data, service, default_lang="vi", output_path="outp
 
     today_label_vi = f'<p class="lang-vi">Ngày {TODAY} - {DURATION} ngày gần nhất.</p>'
     today_label_en = f'<p class="lang-en" style="display:none">Update at {TODAY} - The last {DURATION} days.</p>'
-    main_header_vi = f'<h1 class="lang-vi">Báo cáo {service}</h1>'
-    main_header_en = f'<h1 class="lang-en" style="display:none">Report {service}</h1>'
+    main_header_vi = f'<h1 class="lang-vi">Security News</h1>'
+    main_header_en = f'<h1 class="lang-en" style="display:none">Security News</h1>'
     credit_vi = '<p class="lang-vi">Thực hiện bởi Scanning Tool</p>' 
     credit_en = '<p class="lang-en" style="display:none">Performed by Scanning Tool</p>'
 
@@ -553,7 +553,7 @@ def export_to_html_bilingual(data, service, default_lang="vi", output_path="outp
         <html lang="{'vi' if default_lang=='vi' else 'en'}">
         <head>
             <meta charset="UTF-8">
-            <title>Report {service}</title>
+            <title>Security News</title>
             <style>{CSS_TEMPLATE}</style>
         </head>
         <body>
