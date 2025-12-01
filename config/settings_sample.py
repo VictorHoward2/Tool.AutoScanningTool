@@ -55,14 +55,14 @@ AI_MODELS = ["llama3.1:8b"]
 NUMBER_WORDS_SUMMARIZE = 200
 
 # Google
-API_KEY_GOOGLE = "AIzaSyDBUcnY9yG5ZRK0WzhJQLuGW-j6BOcwBaY"
+API_KEY_GOOGLE = "Your_API_Key"
 URL_SEARCH_GOOGLE = "https://www.googleapis.com/customsearch/v1"
-SEARCH_ENGINE_ID_GOOGLE = "f3dc1d67c30ed47dc"
+SEARCH_ENGINE_ID_GOOGLE = "Your_API_Engine_ID"
 RESULTS_PER_REQUEST_GOOGLE = 3  # Google giới hạn tối đa 10/lần
 NUM_RESULTS_GOOGLE = 10  # Tổng số kết quả/query
 
 # Youtube
-API_KEY_YOUTUBE = "AIzaSyCCNntXp6zMa9dV-RLVC-dhp2ipv6O9Vqo"
+API_KEY_YOUTUBE = "Your_API_Key"
 URL_SEARCH_YOUTUBE = "https://www.googleapis.com/youtube/v3/search"
 URL_INFO_VIDEO = "https://www.googleapis.com/youtube/v3/videos"
 URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
@@ -87,16 +87,7 @@ RSS = "RSS"
 
 GEMINI_API_KEYS = [
     
-    "AIzaSyBJ9C7S1BnXi6gORnq19HiS8WhNo7-6Jk0",
-    "AIzaSyBw423k9HuUhaHbgzkRt09nEw9__ayer6g",
-    "AIzaSyD0YhhsFjW9vVMYIMxMYpENWZeBkwORaDQ",
-    "AIzaSyC4NhspuItFwvI1U7JJfmQIEJtwqN6r1EE",
-    "AIzaSyDiaVjhw_3hm6gr4IwRjRJIbQjjgERh4eI",
-    "AIzaSyD2hbKvhp0TRHJyV0pc2xXHwz2meNJkUAc",
-    "AIzaSyBREMlV8_oZUjPOTRl2siF4Ime2QQdN1eE",
-    "AIzaSyCvIColbM8PiY9EQ6GE6EoQtHv5gbL2MoM",
-    "AIzaSyAEl2kVpNIz0u9ExJbpjk3gqJxHS7gSXTk",
-    "AIzaSyAugYbgc1xMqYYGW2NX7ICbehUPJdaed6g",
-    "AIzaSyBf-eIa26TY9GpUxsssCQ693kEsDkYjYY0",
-    "AIzaSyCMINjA10a13mDsUs4k2LemwPemC-p_QDU",
+    "Your_API_Key",
+    "Your_API_Key",
+    "...",
 ]
