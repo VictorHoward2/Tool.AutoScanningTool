@@ -626,7 +626,7 @@ CRUD_JS = """
     function updateArticleNumbers() {
         const articles = document.querySelectorAll('main > article:not(.new-article-form)');
         articles.forEach((article, index) => {
-            const number = index + 1;
+            const number = index;
             const h2Vi = article.querySelector('.lang-vi h2');
             const h2En = article.querySelector('.lang-en h2');
             if (h2Vi) {
