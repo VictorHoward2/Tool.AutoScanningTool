@@ -7,10 +7,11 @@ from core.ai_processor import AIProcessor
 from core.search_rss import RSSSearch
 from core.exporter import *
 from core.logger import logger
+import json
 
 def main():
 
-    logger.info("🚀 [MAIN] Bắt đầu phiên quét mới")
+    logger.info("[MAIN] Bắt đầu phiên quét mới")
     google_searcher = GoogleSearch()
     youtube_searcher = YoutubeSearch()
     translator = Translator()
@@ -75,10 +76,12 @@ def main():
         export_to_excel(results_youtube, YOUTUBE)
         export_to_html_vi(results_youtube, YOUTUBE)
     if IS_RSS:
-        export_to_excel(results_rss, RSS)
-        export_to_html_vi(results_rss, RSS)
-        export_to_html_en(results_rss, RSS)
-        export_to_html_bilingual(results_rss, RSS)
+        with open("test\\sample.json", "w", encoding="utf-8") as f:
+            json.dump(results_rss, f, ensure_ascii=False, indent=4)
+        # export_to_excel(results_rss, RSS)
+        # export_to_html_vi(results_rss, RSS)
+        # export_to_html_en(results_rss, RSS)
+        # export_to_html_bilingual(results_rss, RSS)
 
     logger.info("[MAIN] Scan completed!")
 

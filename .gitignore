@@ -7,3 +7,4 @@
 *.ipynb
 test*
 settings.py
+test/

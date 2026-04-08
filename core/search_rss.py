@@ -1,22 +1,24 @@
 import feedparser
-import html
+import json
 from datetime import datetime, timedelta, timezone
 import cloudscraper
 from config.settings import *
-from core.translator import Translator
-from bs4 import BeautifulSoup
 
 
 class RSSSearch:
     def __init__(self):
         self.scraper = cloudscraper.create_scraper()
-        self.translator = Translator()
 
     def fetch_recent_posts(self, days=DURATION):
         recent_posts = []
         for rss_url in RSS_URL:
             response = self.scraper.get(rss_url)
+            with open("test\\sample.html", "w", encoding="utf-8") as f:
+                f.write(response.text)
+                
             feed = feedparser.parse(response.text)
+            with open("test\\feed.json", "w", encoding="utf-8") as f:
+                json.dump(feed, f, ensure_ascii=False, indent=4, default=str)
             duration = datetime.now(timezone.utc) - timedelta(days=days)
 
             for entry in feed.entries:
@@ -34,23 +36,9 @@ class RSSSearch:
                             "link": entry.get("link"),
                             "published": pub.isoformat(),
                             "snippet": entry.get("summary", ""),
-                            "vietsub": (
-                                self.translator.translate_using_gemini(
-                                    text=html.escape(
-                                        BeautifulSoup(
-                                            entry.get("summary", ""), "html.parser"
-                                        ).get_text()
-                                    )
-                                )
-                                if GEMINI_FOR_TRANSLATE
-                                else self.translator.translate_using_api(
-                                    text=html.escape(
-                                        BeautifulSoup(
-                                            entry.get("summary", ""), "html.parser"
-                                        ).get_text()
-                                    )
-                                )
-                            ),
+                            "image": next((link["href"] for link in entry.get("links", []) if link.get("type").startswith("image/")), None),
+                            "readtime": entry.get("readtime", ""),
+                            "tags": [tag.get("term", "") for tag in entry.get("tags", [])],
                         }
                     )
 
