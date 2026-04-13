@@ -36,7 +36,7 @@ class RSSSearch:
                             "link": entry.get("link"),
                             "published": pub.isoformat(),
                             "snippet": entry.get("summary", ""),
-                            "image": next((link["href"] for link in entry.get("links", []) if link.get("type").startswith("image/")), None),
+                            "image": next((link["href"] for link in entry.get("links", []) if link.get("type").startswith("image/")), ""),
                             "readtime": entry.get("readtime", ""),
                             "tags": [tag.get("term", "") for tag in entry.get("tags", [])],
                         }

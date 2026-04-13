@@ -96,6 +96,9 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize all")
     
+    def summarize_overview_sample_vi(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI summary for overview of all articles in Vietnamese."
+    
     def summarize_overview_gemini_en(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             f"You are an expert in analyzing and summarizing text. "
@@ -113,6 +116,9 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize all")
     
+    def summarize_overview_sample_en(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI summary for overview of all articles in English."
+
     def summarize_content_gemini_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             f"Bạn là một chuyên gia phân tích và tóm tắt văn bản. "
@@ -130,6 +136,9 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
+    def summarize_content_sample_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI summary for content of an artical in Vietnamese."
+
     def summarize_content_gemini_en(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             f"You are an expert in analyzing and summarizing text. "
@@ -146,6 +155,9 @@ class AIProcessor:
             f"Please summarize the content of the above website for me."
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
+
+    def summarize_content_sample_en(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI summary for content of an artical in English."
 
     def summarize_content_ollama_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
@@ -196,6 +208,9 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
+    def summarize_description_sample_vi(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI summary for description of an artical in Vietnamese."
+
     def summarize_description_gemini_en(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         system_instruction = (
             f"You are an expert in analyzing and summarizing video content. "
@@ -214,6 +229,9 @@ class AIProcessor:
             f"Please summarize the content of the video above for I."
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
+
+    def summarize_description_sample_en(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI summary for description of an artical in English."
 
     def summarize_description_ollama_vi(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
@@ -264,6 +282,9 @@ class AIProcessor:
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="evaluate", title=title, model=model)
 
+    def is_related_sample_vi(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI evaluate is the artical contains related information in Vietnamese."
+
     def is_related_ollama_vi(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_OLLAMA):
         prompt = (
             f"Tiêu đề: {title}\nĐoạn trích: {snippet}\nLink: {link}\nTừ khóa của chủ đề: {topic_key}\n\n"
@@ -300,6 +321,9 @@ class AIProcessor:
             f"{demands_text}"
         )
         return self._call_gemini(system_instruction, user_prompt, error_prefix="extract info", model=model)
+
+    def extract_info_sample_vi(self, topic_key, text, model=DEFAULT_MODEL_GEMINI):
+        return "Sample AI extract related information in the artical in Vietnamese."
 
     def extract_info_ollama_vi(self, topic_key, text, model=DEFAULT_MODEL_OLLAMA):
         if text == "":
@@ -346,6 +370,23 @@ class AIProcessor:
                                 item["content"],
                             )
                         )
+                    elif (service == GOOGLE and IS_TEST_AI_PROCESS) or (service == RSS and IS_TEST_AI_PROCESS):
+                        item["summary_vi"] = self.strip_thoughts(
+                            self.summarize_content_sample_vi(
+                                item["title"],
+                                item["snippet"],
+                                item["link"],
+                                item["content"],
+                            )
+                        )
+                        item["summary_en"] = self.strip_thoughts(
+                            self.summarize_content_sample_en(
+                                item["title"],
+                                item["snippet"],
+                                item["link"],
+                                item["content"],
+                            )
+                        )
                     else:
                         item["summary_vi"] = self.strip_thoughts(
                             self.summarize_content_ollama_vi(
@@ -383,6 +424,24 @@ class AIProcessor:
                             item["related"] = "Không biết"
                             item["extract"] = self.strip_thoughts(
                                 self.extract_info_gemini_vi(key, item["content"])
+                            )
+                    elif (service == GOOGLE and IS_TEST_AI_PROCESS) or (service == RSS and IS_TEST_AI_PROCESS):
+                        opinion = self.strip_thoughts(self.is_related_sample_vi(key,item["title"],item["snippet"],item["link"],))
+                        try:
+                            opinion_value = int(opinion)
+                        except ValueError:
+                            opinion_value = 2  # N/A
+                        if opinion_value == 0:
+                            item["related"] = "Không"
+                        elif opinion_value == 1:
+                            item["related"] = "Có"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_sample_vi(key, item["content"])
+                            )
+                        else:
+                            item["related"] = "Không biết"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_sample_vi(key, item["content"])
                             )
                     else:
                         opinions = []
@@ -435,7 +494,18 @@ class AIProcessor:
             )
             try:
                 if IS_SUMMARIZE_YOUTUBE:
-                    if GEMINI_FOR_YOUTUBE:
+                    if IS_TEST_AI_PROCESS:
+                        item["summary_vi"] = self.strip_thoughts(
+                            self.summarize_description_sample_vi(
+                                item["title"], item["snippet"], item["link"]
+                            )
+                        )
+                        item["summary_en"] = self.strip_thoughts(
+                            self.summarize_description_sample_en(
+                                item["title"], item["snippet"], item["link"]
+                            )
+                        )
+                    elif GEMINI_FOR_YOUTUBE:
                         item["summary_vi"] = self.strip_thoughts(
                             self.summarize_description_gemini_vi(
                                 item["title"], item["snippet"], item["link"]
@@ -461,6 +531,24 @@ class AIProcessor:
 
                 # Lấy kết quả đánh giá từ các mô hình
                 if IS_EXTRACT_YOUTUBE:
+                    if IS_TEST_AI_PROCESS:
+                        opinion = self.strip_thoughts(self.is_related_sample_vi(key,item["title"],item["snippet"],item["link"]))
+                        try:
+                            opinion_value = int(opinion)
+                        except ValueError:
+                            opinion_value = 2  # N/A
+                        if opinion_value == 0:
+                            item["related"] = "Không"
+                        elif opinion_value == 1:
+                            item["related"] = "Có"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_sample_vi(key, item["snippet"])
+                            )
+                        else:
+                            item["related"] = "Không biết"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_sample_vi(key, item["snippet"])
+                            )
                     if GEMINI_FOR_YOUTUBE:
                         opinion = self.strip_thoughts(self.is_related_gemini_vi(key,item["title"],item["snippet"],item["link"]))
                         try:
