@@ -4,8 +4,8 @@ import traceback
 from core.logger import logger
 from config.settings import *
 from google import genai
-from google.genai import types
-from google.api_core import exceptions as google_exceptions
+# from google.genai import types
+# from google.api_core import exceptions as google_exceptions
 
 class Translator:
     def translate_using_api(self, text, from_lang="en", to_lang="vi"):

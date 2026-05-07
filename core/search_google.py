@@ -49,15 +49,15 @@ class GoogleSearch:
                                 "title": item.get("title", ""),
                                 "link": item.get("link", ""),
                                 "snippet": item.get("snippet", ""),
-                                "vietsub": (
-                                    self.translator.translate_using_gemini(
-                                        text=item.get("snippet", "")
-                                    ) 
-                                    if GEMINI_FOR_TRANSLATE
-                                    else self.translator.translate_using_api(
-                                        text=item.get("snippet", "")
-                                    )
-                                ),
+                                # "vietsub": (
+                                #     self.translator.translate_using_gemini(
+                                #         text=item.get("snippet", "")
+                                #     ) 
+                                #     if GEMINI_FOR_TRANSLATE
+                                #     else self.translator.translate_using_api(
+                                #         text=item.get("snippet", "")
+                                #     )
+                                # ),
                             }
                         )
                 else:

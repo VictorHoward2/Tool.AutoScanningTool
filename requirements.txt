@@ -6,3 +6,4 @@ openpyxl
 pandas
 cloudscraper
 feedparser
+google-genai

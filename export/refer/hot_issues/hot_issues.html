@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Security Insights Framework - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#76d6d5",
+                      "on-primary-container": "#fefcff",
+                      "surface-container-highest": "#e1e3e4",
+                      "surface-container-high": "#e7e8e9",
+                      "tertiary-container": "#c64f00",
+                      "surface-dim": "#d9dadb",
+                      "outline": "#717786",
+                      "on-secondary": "#ffffff",
+                      "background": "#f8f9fa",
+                      "primary-container": "#156aff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "surface-variant": "#e1e3e4",
+                      "secondary": "#006a6a",
+                      "primary": "#0052d1",
+                      "inverse-surface": "#2e3132",
+                      "on-primary-fixed": "#001849",
+                      "surface": "#f8f9fa",
+                      "on-primary-fixed-variant": "#003fa4",
+                      "on-secondary-container": "#006e6e",
+                      "secondary-fixed": "#93f2f2",
+                      "tertiary": "#9e3d00",
+                      "tertiary-fixed-dim": "#ffb595",
+                      "on-tertiary-fixed": "#351000",
+                      "outline-variant": "#c1c6d7",
+                      "tertiary-fixed": "#ffdbcc",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#edeeef",
+                      "on-surface": "#191c1d",
+                      "primary-fixed": "#dae1ff",
+                      "surface-bright": "#f8f9fa",
+                      "surface-tint": "#0054d6",
+                      "on-tertiary-fixed-variant": "#7c2e00",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#004f4f",
+                      "inverse-primary": "#b3c5ff",
+                      "on-error": "#ffffff",
+                      "on-tertiary-container": "#fffbff",
+                      "on-background": "#191c1d",
+                      "secondary-container": "#90efef",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-surface-variant": "#414755",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#b3c5ff",
+                      "surface-container-low": "#f3f4f5",
+                      "on-secondary-fixed": "#002020"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-shadow {
+            box-shadow: 0 40px 40px rgba(25, 28, 29, 0.04);
+        }
+        .ghost-border {
+            border: 1px solid rgba(193, 198, 215, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-secondary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-[#ffffff]/80 dark:bg-[#191c1d]/80 backdrop-blur-md shadow-[0_40px_40px_rgba(25,28,29,0.04)]">
+<div class="flex justify-between items-center w-full px-8 h-20 max-w-[1440px] mx-auto">
+<div class="text-2xl font-extrabold text-[#191c1d] dark:text-[#f8f9fa] tracking-tighter font-headline">
+                Security Insights
+            </div>
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-[#414755] dark:text-[#c1c6d7] font-medium font-manrope hover:text-[#0052d1] transition-colors duration-200" href="#">Global Information</a>
+<a class="text-[#414755] dark:text-[#c1c6d7] font-medium font-manrope hover:text-[#0052d1] transition-colors duration-200" href="#">New Features</a>
+<a class="text-[#0052d1] dark:text-[#156aff] border-b-2 border-[#0052d1] pb-1 font-manrope font-bold text-lg tracking-tight" href="#">Hot Android Issues</a>
+<a class="text-[#414755] dark:text-[#c1c6d7] font-medium font-manrope hover:text-[#0052d1] transition-colors duration-200" href="#">Security Patent Trend</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant scale-95 active:opacity-80 transition-transform">language</button>
+<img alt="User profile" class="w-10 h-10 rounded-full border-2 border-surface-container-highest" data-alt="Close-up professional portrait of a tech curator in soft daylight against a clean minimalist studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMEDVjydlYnvjWOjIh-GhJKsVendBubZ1SIjQErjEJ3jMhb9zxSp1EWdsfaR0OyslVyzoIkHC7b_fXvBMKVh9AKYJ5FQD1H151eDgrCX_9nfvRzI1fdWGUfN9F_ZP7WO8Ji08DXnN7b-4ij3tMtqCkz1otuYnNjF8hCOwOhbXzIvd5EHfaJGXjHsv2twpLjvwURgljWTTvqZQfBVXfr5n6eW6T_7CG-ZxyAJqJP-4ExMUiITyK_4I8rtJc-YXz1yry1SrVVLN0eMN1"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-screen py-6 px-4 w-64 bg-[#f8f9fa] dark:bg-[#191c1d] border-r border-[#c1c6d7]/15 z-40 pt-24">
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h3 class="font-manrope font-black text-[#191c1d] dark:text-white leading-tight">The Curator</h3>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest font-inter">Cyber Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-[#414755] dark:text-[#c1c6d7] hover:bg-[#edeeef] dark:hover:bg-[#414755] rounded-lg transition-all duration-300" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-inter text-sm font-semibold">Intelligence</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#414755] dark:text-[#c1c6d7] hover:bg-[#edeeef] dark:hover:bg-[#414755] rounded-lg transition-all duration-300" href="#">
+<span class="material-symbols-outlined">new_releases</span>
+<span class="font-inter text-sm font-semibold">Updates</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-[#edeeef] dark:bg-[#414755] text-[#0052d1] rounded-lg transition-all duration-300" href="#">
+<span class="material-symbols-outlined">android</span>
+<span class="font-inter text-sm font-semibold">Android</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#414755] dark:text-[#c1c6d7] hover:bg-[#edeeef] dark:hover:bg-[#414755] rounded-lg transition-all duration-300" href="#">
+<span class="material-symbols-outlined">article</span>
+<span class="font-inter text-sm font-semibold">Patents</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4">
+<button class="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-md font-bold shadow-lg text-sm">
+                Upgrade Access
+            </button>
+<div class="pt-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-[#414755] dark:text-[#c1c6d7] hover:underline text-xs uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#414755] dark:text-[#c1c6d7] hover:underline text-xs uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+                    Support
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:ml-64 pt-28 pb-12 px-8 max-w-[1200px]">
+<!-- Header Section -->
+<header class="mb-12">
+<h1 class="font-headline font-extrabold text-5xl text-on-surface tracking-tighter mb-4">Hot Android Issues</h1>
+<p class="text-on-surface-variant text-lg max-w-2xl leading-relaxed">Intelligence briefing on critical vulnerabilities, kernel-level exploits, and system integrity patches monitored in real-time across the Android ecosystem.</p>
+</header>
+<!-- Quick Stats Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
+<div class="md:col-span-2 bg-surface-container-low p-6 rounded-lg flex flex-col justify-between">
+<div>
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">System Vulnerability Index</p>
+<h2 class="text-4xl font-headline font-black text-primary">8.4 / 10</h2>
+</div>
+<div class="h-24 mt-4 flex items-end gap-1">
+<div class="bg-primary/20 w-full h-[40%]" title="Mon"></div>
+<div class="bg-primary/30 w-full h-[60%]" title="Tue"></div>
+<div class="bg-primary/40 w-full h-[55%]" title="Wed"></div>
+<div class="bg-primary/60 w-full h-[80%]" title="Thu"></div>
+<div class="bg-primary/80 w-full h-[95%]" title="Fri"></div>
+<div class="bg-primary w-full h-[90%]" title="Sat"></div>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-lg">
+<span class="material-symbols-outlined text-error mb-4" style="font-variation-settings: 'FILL' 1;">dangerous</span>
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Active Exploits</p>
+<h3 class="text-3xl font-headline font-bold text-on-surface mt-1">12</h3>
+<p class="text-xs text-error font-medium mt-2">+3 in last 24h</p>
+</div>
+<div class="bg-surface-container p-6 rounded-lg">
+<span class="material-symbols-outlined text-secondary mb-4" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Patent Filings</p>
+<h3 class="text-3xl font-headline font-bold text-on-surface mt-1">142</h3>
+<p class="text-xs text-secondary font-medium mt-2">Mobile Security 2024</p>
+</div>
+</section>
+<!-- Tab Filtering -->
+<div class="flex gap-4 mb-10 overflow-x-auto pb-2 no-scrollbar">
+<button class="px-6 py-2 bg-secondary-container text-on-secondary-container rounded-full font-semibold text-sm whitespace-nowrap">All Intelligence</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-semibold text-sm hover:bg-surface-container-highest transition-colors whitespace-nowrap">CVE-2024 Reports</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-semibold text-sm hover:bg-surface-container-highest transition-colors whitespace-nowrap">Firmware Analysis</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-semibold text-sm hover:bg-surface-container-highest transition-colors whitespace-nowrap">OEM Specifics</button>
+</div>
+<!-- News Editorial Strips -->
+<section class="space-y-6">
+<!-- Article 1 -->
+<article class="group bg-surface-container-low rounded-lg p-6 lg:p-8 flex flex-col lg:flex-row gap-8 transition-transform hover:scale-[1.01] duration-300">
+<div class="lg:w-1/3 shrink-0">
+<img alt="Mobile security hardware chip" class="w-full h-48 object-cover rounded-lg" data-alt="High-tech macro shot of a microprocessor with glowing circuitry light on a clean blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDApycTKtbbnUEVDSgVfzxBmPpKaHhejntaRslnGq2Uq8oVAurydfh1bL268vSKTyjwcViaiXkdlOpGegfNrm_wktI1nSy1gnSNRkKHbjN_L5IyF0NiQz-8LrkQNC0ys3XZnzgWL-5wKRs_UypZ65nCu4jELMaJNZqEeVvy8dIS8xFPfeRmyA70Ll0jieQuJVj_hE54NDlpcsqUaD3wckZrMeCf96E4KhADj1qir0awdlistCZc4I9AJVC1tTZNc3iMmUMCQCpJZzjy"/>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="flex items-center gap-3 mb-3">
+<span class="bg-error-container text-on-error-container text-[10px] px-2 py-1 font-black uppercase tracking-tighter rounded-sm">Critical</span>
+<span class="text-on-surface-variant text-xs font-medium uppercase tracking-widest">October 14, 2024</span>
+</div>
+<h2 class="font-headline font-bold text-2xl text-on-surface mb-4 group-hover:text-primary transition-colors">Zero-Day discovered in Qualcomm Adreno GPU driver</h2>
+<p class="text-on-surface-variant leading-relaxed mb-6">A high-severity memory corruption vulnerability has been identified that allows local privilege escalation. This affects over 30% of active Android flagship devices globally.</p>
+<!-- AI Summary Box -->
+<div class="bg-secondary-fixed/20 p-4 rounded-lg border-l-4 border-secondary flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary text-xl">auto_awesome</span>
+<div>
+<p class="text-xs font-bold text-secondary uppercase tracking-widest mb-1">AI Intelligence Summary</p>
+<p class="text-sm text-on-surface leading-tight font-medium">Patch deployment is currently at 12%. Primary risk involves arbitrary code execution within the kernel context. Recommend immediate firmware check for Snapdragon 8 Gen 2 units.</p>
+</div>
+</div>
+</div>
+</article>
+<!-- Article 2 -->
+<article class="group bg-surface-container-low rounded-lg p-6 lg:p-8 flex flex-col lg:flex-row gap-8 transition-transform hover:scale-[1.01] duration-300">
+<div class="lg:w-1/3 shrink-0">
+<img alt="Android patent diagram" class="w-full h-48 object-cover rounded-lg" data-alt="Technical patent diagram of mobile security architecture with clean black lines on white paper background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHZVzEZSnHVE90q8Zgv5hM_xCDgNMSMt9cGVuja1pgx5qjJdMFQ2R_zx7BNQrgnzJQv7yHp0ohs7JCfltV15wIRytPWtOyrVRnu5rJxAlsBty3br0TK8lXcreoXwSJsmMXj3TD9SXLYMuQbZWxXj_YV69FtWCP1j4Gx63_NGroLMD_E4J2mdFgi__fiBQHeN8lG2Aus0xxQ6B_-lxPr4meTj1m7_uuY7DII09G-qzgcIDPDAfNKopECPP4gPjNrdrGefQGZtT5qMZC"/>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="flex items-center gap-3 mb-3">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] px-2 py-1 font-black uppercase tracking-tighter rounded-sm">Patent Trend</span>
+<span class="text-on-surface-variant text-xs font-medium uppercase tracking-widest">October 12, 2024</span>
+</div>
+<h2 class="font-headline font-bold text-2xl text-on-surface mb-4 group-hover:text-primary transition-colors">Samsung files patent for hardware-based AI deepfake detection</h2>
+<p class="text-on-surface-variant leading-relaxed mb-6">The proposed framework leverages a dedicated NPU-level layer to analyze incoming video streams for temporal inconsistencies associated with synthetic media generation.</p>
+<!-- AI Summary Box -->
+<div class="bg-secondary-fixed/20 p-4 rounded-lg border-l-4 border-secondary flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary text-xl">auto_awesome</span>
+<div>
+<p class="text-xs font-bold text-secondary uppercase tracking-widest mb-1">AI Intelligence Summary</p>
+<p class="text-sm text-on-surface leading-tight font-medium">Shift toward "zero-trust" hardware pipelines. This move likely pre-empts future regulatory requirements for device-level content authentication across the EU.</p>
+</div>
+</div>
+</div>
+</article>
+<!-- Article 3 -->
+<article class="group bg-surface-container-low rounded-lg p-6 lg:p-8 flex flex-col lg:flex-row gap-8 transition-transform hover:scale-[1.01] duration-300">
+<div class="lg:w-1/3 shrink-0">
+<img alt="Abstract network security" class="w-full h-48 object-cover rounded-lg" data-alt="Abstract digital representation of a secure network mesh with nodes glowing in deep blue and teal shades" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4jxwaL_cCwbrCTKwxLSFLM6C1D2uHVd7Wwm89Hxffanh_Nj_1HwsuHCfZbYtuI-p3Or37monqzeEW2JBq2Ad_fgD-U5WhAGXVXeZ-Gj5ybJrH84_IPcoZYZBVNil_SaIF238HZtXr0ZCUMp-86g1_ivUF8PAXtbsAPmINAdcja1wqwaVtXZBK_8UYw3ZLNs_cNlopsDRjGQLgZ9wqSunZpqcFVsu6qzf06tYzCaC9OCPu-swKRY1YxBt_JFq2gi6qRJ0lwUtHryn1"/>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="flex items-center gap-3 mb-3">
+<span class="bg-surface-container-highest text-on-surface-variant text-[10px] px-2 py-1 font-black uppercase tracking-tighter rounded-sm">Analysis</span>
+<span class="text-on-surface-variant text-xs font-medium uppercase tracking-widest">October 09, 2024</span>
+</div>
+<h2 class="font-headline font-bold text-2xl text-on-surface mb-4 group-hover:text-primary transition-colors">The evolution of Sandbox bypasses in Android 15</h2>
+<p class="text-on-surface-variant leading-relaxed mb-6">Security researchers have documented a new class of logic errors that exploit the updated inter-process communication (IPC) protocol to leak sensitive package metadata.</p>
+<!-- AI Summary Box -->
+<div class="bg-secondary-fixed/20 p-4 rounded-lg border-l-4 border-secondary flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary text-xl">auto_awesome</span>
+<div>
+<p class="text-xs font-bold text-secondary uppercase tracking-widest mb-1">AI Intelligence Summary</p>
+<p class="text-sm text-on-surface leading-tight font-medium">Technical complexity: Moderate. Impact: High for enterprise devices. Google is expected to release an emergency 'S' patch by next Wednesday.</p>
+</div>
+</div>
+</div>
+</article>
+</section>
+<!-- Pagination -->
+<nav class="flex items-center justify-between mt-16 border-t border-outline-variant/15 pt-8">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary font-bold transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+                PREV
+            </button>
+<div class="flex gap-4">
+<button class="w-10 h-10 flex items-center justify-center bg-primary text-on-primary font-bold rounded-lg">1</button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant font-bold rounded-lg transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant font-bold rounded-lg transition-colors">3</button>
+<span class="w-10 h-10 flex items-center justify-center text-on-surface-variant">...</span>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant font-bold rounded-lg transition-colors">12</button>
+</div>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary font-bold transition-colors">
+                NEXT
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</nav>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 border-t border-[#c1c6d7]/15 bg-[#f8f9fa] dark:bg-[#191c1d] mt-24">
+<div class="flex flex-col items-center justify-center gap-4 w-full">
+<div class="flex gap-8 mb-4">
+<a class="font-inter text-xs uppercase tracking-widest text-[#414755] dark:text-[#c1c6d7] hover:underline" href="#">Privacy Policy</a>
+<a class="font-inter text-xs uppercase tracking-widest text-[#414755] dark:text-[#c1c6d7] hover:underline" href="#">Terms of Service</a>
+<a class="font-inter text-xs uppercase tracking-widest text-[#414755] dark:text-[#c1c6d7] hover:underline" href="#">API Access</a>
+</div>
+<p class="font-inter text-xs uppercase tracking-widest text-[#414755] dark:text-[#c1c6d7]">
+                © 2024 Security Insights Framework. All rights reserved.
+            </p>
+</div>
+</footer>
+</body></html>

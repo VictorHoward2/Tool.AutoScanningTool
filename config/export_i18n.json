@@ -1,0 +1,148 @@
+{
+  "report": {
+    "brand": {
+      "vi": "Security Insights",
+      "en": "Security Insights"
+    },
+    "title": {
+      "vi": "Báo cáo tổng hợp bảo mật",
+      "en": "Security Intelligence Full Report"
+    },
+    "updated": {
+      "vi": "Ngày {today} - {duration} ngày gần nhất",
+      "en": "Updated at {today} - Last {duration} days"
+    },
+    "sidebar_title": {
+      "vi": "The Curator",
+      "en": "The Curator"
+    },
+    "sidebar_subtitle": {
+      "vi": "Cyber Intelligence",
+      "en": "Cyber Intelligence"
+    }
+  },
+  "nav": {
+    "global_information": {
+      "vi": "Thông tin toàn cầu",
+      "en": "Global Information"
+    },
+    "new_features": {
+      "vi": "Tính năng mới",
+      "en": "New Features"
+    },
+    "hot_android_issues": {
+      "vi": "Vấn đề Android nổi bật",
+      "en": "Hot Android Issues"
+    },
+    "patent_trend": {
+      "vi": "Xu hướng bằng sáng chế",
+      "en": "Security Patent Trend"
+    }
+  },
+  "subsections": {
+    "new_features_samsung": {
+      "vi": "Samsung",
+      "en": "Samsung"
+    },
+    "new_features_iphone": {
+      "vi": "iPhone",
+      "en": "iPhone"
+    },
+    "new_features_china": {
+      "vi": "Trung Quốc (hãng điện thoại)",
+      "en": "China (Chinese phone brands)"
+    }
+  },
+  "sections": {
+    "global_information": {
+      "title": {
+        "vi": "Thông tin toàn cầu",
+        "en": "Global Information"
+      },
+      "description": {
+        "vi": "Tổng hợp tin tức an ninh theo ngày.",
+        "en": "Daily curated security intelligence from the bedrock of the digital landscape."
+      }
+    },
+    "new_features": {
+      "title": {
+        "vi": "Tính năng mới",
+        "en": "New Features"
+      },
+      "description": {
+        "vi": "Cập nhật tính năng và hướng phát triển sản phẩm.",
+        "en": "Editorial updates for upcoming products, platform releases, and feature trends."
+      }
+    },
+    "hot_android_issues": {
+      "title": {
+        "vi": "Vấn đề Android nổi bật",
+        "en": "Hot Android Issues"
+      },
+      "description": {
+        "vi": "Lỗi nghiêm trọng và cảnh báo bảo mật Android.",
+        "en": "Critical vulnerabilities, exploit signals, and urgent Android security advisories."
+      }
+    },
+    "patent_trend": {
+      "title": {
+        "vi": "Xu hướng bằng sáng chế",
+        "en": "Patent Trend"
+      },
+      "description": {
+        "vi": "Tín hiệu xu hướng bảo mật qua dữ liệu bằng sáng chế.",
+        "en": "Patent-driven signals about where mobile security capabilities are moving next."
+      }
+    }
+  },
+  "labels": {
+    "no_data": {
+      "vi": "Không có dữ liệu.",
+      "en": "No data."
+    },
+    "security": {
+      "vi": "Bảo mật",
+      "en": "Security"
+    },
+    "feature_badge": {
+      "vi": "Tính năng",
+      "en": "Feature"
+    },
+    "issue_badge": {
+      "vi": "Vấn đề",
+      "en": "Issue"
+    },
+    "patent_badge": {
+      "vi": "Bằng sáng chế",
+      "en": "Patent"
+    },
+    "summary_ai_curator": {
+      "vi": "Tóm tắt AI",
+      "en": "AI Curator Summary"
+    },
+    "summary_curator": {
+      "vi": "Tóm tắt AI",
+      "en": "Curator AI Summary"
+    },
+    "summary_ai_intel": {
+      "vi": "Tóm tắt AI",
+      "en": "AI Intelligence Summary"
+    },
+    "overall": {
+      "vi": "Tổng quan",
+      "en": "Overall"
+    },
+    "filter_by_tag": {
+      "vi": "Lọc theo tag",
+      "en": "Filter by tag"
+    },
+    "show_more_tags": {
+      "vi": "Xem thêm ({n})",
+      "en": "Show more ({n})"
+    },
+    "show_less_tags": {
+      "vi": "Thu gọn",
+      "en": "Show less"
+    }
+  }
+}

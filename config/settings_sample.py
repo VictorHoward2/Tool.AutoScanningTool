@@ -4,6 +4,7 @@ from utils.time_utils import get_previous_date
 
 # Modules settings
 IS_TRANSLATE_QUERY = False
+IS_TEST_AI_PROCESS = False
 
 IS_GOOGLE = False
 IS_SUMMARIZE_GOOGLE = True
@@ -21,6 +22,22 @@ GEMINI_FOR_TRANSLATE = True
 GEMINI_FOR_GOOGLE = True
 GEMINI_FOR_YOUTUBE = True
 GEMINI_FOR_RSS = True
+
+GAUSS_FOR_TRANSLATE = True
+GAUSS_FOR_GOOGLE = False
+GAUSS_FOR_YOUTUBE = False
+GAUSS_FOR_RSS = False
+
+GAUSS_API_BASE_URL = os.getenv("GAUSS_API_BASE_URL", "")
+GAUSS_X_GENERATIVE_AI_CLIENT = os.getenv("GAUSS_X_GENERATIVE_AI_CLIENT", "")
+GAUSS_X_OPENAPI_TOKEN = os.getenv("GAUSS_X_OPENAPI_TOKEN", "")  # thường có dạng "Bearer ..."
+GAUSS_X_GENERATIVE_AI_USER_EMAIL = os.getenv("GAUSS_X_GENERATIVE_AI_USER_EMAIL", "")
+DEFAULT_MODEL_GAUSS = os.getenv(
+    "DEFAULT_MODEL_GAUSS", "01988e7d-b30e-79d1-8385-2ed7c222d532"
+)  # TEXT model "Gauss" (xem test/Gauss API/all_models.json)
+GAUSS_API_DELAY = 3
+GAUSS_MAX_RETRIES = 5
+GAUSS_BACKOFF_FACTOR = 2
 
 # Scan settings
 TOPIC_KEYWORD = "Network Unlock - dịch vụ gỡ khóa mạng (mở SIM lock) trên điện thoại để thiết bị có thể sử dụng SIM của bất kỳ nhà mạng nào thay vì bị khóa với một nhà mạng cố định. Đặc biệt quan tâm Network Unlock cho các điện thoại Samsung."  # các thông tin muốn trích xuất
@@ -68,16 +85,21 @@ URL_INFO_VIDEO = "https://www.googleapis.com/youtube/v3/videos"
 URL_LINK_YOUTUBE = "https://www.youtube.com/watch?v="
 
 # RSS
-# RSS_URL = ["https://unit42.paloaltonetworks.com/feed/",
+# RSS_GLOBAL_INFOR = ["https://unit42.paloaltonetworks.com/feed/",
 #            "https://www.keysight.com/blogs/rss/feed.xml",
 #            "https://www.infostealers.com/learn-info-stealers/feed/",
 #            "https://feeds.feedburner.com/TheHackersNews",
 #            "https://www.securityweek.com/feed/",
 #            "https://cyberscoop.com/feed/",
 #            "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
-# RSS_URL = ["https://unit42.paloaltonetworks.com/feed/"]
+# RSS_GLOBAL_INFOR = ["https://unit42.paloaltonetworks.com/feed/"]
 
-RSS_URL = ["https://feeds.feedburner.com/TheHackersNews", "https://www.securityweek.com/feed/", "https://unit42.paloaltonetworks.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+RSS_GLOBAL_INFOR = ["https://unit42.paloaltonetworks.com/feed/", "https://www.bleepingcomputer.com/feed/"]  # Thêm nhiều RSS feed nếu cần
+RSS_NEW_FEATURES_SAMSUNG = ["https://news.samsung.com/global/feed"]
+RSS_NEW_FEATURES_IPHONE = ["https://www.apple.com/newsroom/rss-feed.rss", "https://applemagazine.com/feed/"]
+RSS_NEW_FEATURES_CHINA = ["https://www.huaweicentral.com/feed/", "https://xiaomitime.com/feed/", "https://9to5google.com/guides/oppo/feed/", ]
+RSS_ANDROID_ISSUES = ["https://www.infostealers.com/learn-info-stealers/feed/", "https://feeds.feedburner.com/TheHackersNews", "https://www.securityweek.com/feed/", "https://cyberscoop.com/feed/", ]
+RSS_PATENT_TREND = ["https://www.computerworld.com/security/feed/"]
 
 
 # CONSTANTS

@@ -6,7 +6,13 @@ from config.settings import *
 
 class ContentFetcher:
     def __init__(self):
-        self.scraper = cloudscraper.create_scraper()
+        self.scraper = cloudscraper.create_scraper(
+                            browser={
+                                'browser': 'firefox',
+                                'platform': 'windows',
+                                'mobile': False
+                            }
+                        )
 
     def clean_html(self, page_source):
         soup = BeautifulSoup(page_source, "html.parser")
@@ -32,7 +38,7 @@ class ContentFetcher:
         results = self.remove_duplicate_links(results)
         
         for items in results:
-            clean_text = ''
+            clean_text = items['snippet']
             try:
                 response = self.scraper.get(items['link'])
                 if response.status_code == 200:

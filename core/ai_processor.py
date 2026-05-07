@@ -1,11 +1,13 @@
 import re
+import time
 import requests
 import traceback
 from core.logger import logger
 from config.settings import *
+from config import ai_prompts as prompts
 from google import genai
-from google.genai import types
-from google.api_core import exceptions as google_exceptions
+# from google.genai import types
+# from google.api_core import exceptions as google_exceptions
 
 
 class AIProcessor:
@@ -69,6 +71,99 @@ class AIProcessor:
             )
         return None
 
+    def _call_gauss(self, system_instruction, user_prompt, error_prefix, title=None, model=None):
+        model = model or DEFAULT_MODEL_GAUSS
+        if not GAUSS_API_BASE_URL or not GAUSS_X_OPENAPI_TOKEN:
+            logger.error(
+                "[AI PROCESS][GAUSS] Missing GAUSS_API_BASE_URL or GAUSS_X_OPENAPI_TOKEN in settings."
+            )
+            return None
+        if not GAUSS_X_GENERATIVE_AI_CLIENT or not GAUSS_X_GENERATIVE_AI_USER_EMAIL:
+            logger.error(
+                "[AI PROCESS][GAUSS] Missing GAUSS_X_GENERATIVE_AI_CLIENT or GAUSS_X_GENERATIVE_AI_USER_EMAIL."
+            )
+            return None
+
+        url = f"{GAUSS_API_BASE_URL.rstrip('/')}/openapi/chat/v1/messages"
+        headers = {
+            "x-generative-ai-client": GAUSS_X_GENERATIVE_AI_CLIENT,
+            "x-openapi-token": GAUSS_X_OPENAPI_TOKEN,
+            "x-generative-ai-user-email": GAUSS_X_GENERATIVE_AI_USER_EMAIL,
+        }
+        payload = {
+            "modelIds": [model],
+            "contents": [user_prompt],
+            "llmConfig": {
+                "max_new_tokens": 2024,
+                "return_full_text": False,
+                "seed": None,
+                "top_k": 14,
+                "top_p": 0.94,
+                "temperature": 0.4,
+                "repetition_penalty": 1.04,
+            },
+            "isStream": False,
+            "system_prompt": system_instruction,
+        }
+
+        time.sleep(GAUSS_API_DELAY)
+        for attempt in range(GAUSS_MAX_RETRIES):
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=90)
+                if response.status_code == 200:
+                    result = response.json()
+                    raw = None
+                    if "content" in result:
+                        raw = result["content"]
+                    elif (
+                        "choices" in result
+                        and len(result["choices"]) > 0
+                        and "message" in result["choices"][0]
+                    ):
+                        raw = result["choices"][0]["message"].get("content")
+                    if raw is None:
+                        logger.error(
+                            f"[AI PROCESS][GAUSS] Unexpected response shape for {error_prefix}: {result!r}"
+                        )
+                        return None
+                    text = str(raw).strip().strip('"').strip("`")
+                    if text:
+                        return text
+                    logger.warning(
+                        f"[AI PROCESS][GAUSS] Empty content for {error_prefix}, attempt {attempt + 1}."
+                    )
+                    return None
+                if response.status_code == 429:
+                    if attempt < GAUSS_MAX_RETRIES - 1:
+                        delay = GAUSS_API_DELAY * (GAUSS_BACKOFF_FACTOR**attempt)
+                        logger.warning(
+                            f"[AI PROCESS][GAUSS] Rate limited (429), retry in {delay}s "
+                            f"(attempt {attempt + 1}/{GAUSS_MAX_RETRIES})."
+                        )
+                        time.sleep(delay)
+                        continue
+                    logger.error(f"[AI PROCESS][GAUSS] Rate limited after {GAUSS_MAX_RETRIES} attempts.")
+                    return None
+                logger.error(
+                    f"[AI PROCESS][GAUSS] HTTP {response.status_code} for {error_prefix}: {response.text}"
+                )
+                return None
+            except requests.RequestException as e:
+                if attempt < GAUSS_MAX_RETRIES - 1:
+                    delay = GAUSS_API_DELAY * (GAUSS_BACKOFF_FACTOR**attempt)
+                    logger.warning(
+                        f"[AI PROCESS][GAUSS] Request error for {error_prefix}, retry in {delay}s: {e}"
+                    )
+                    time.sleep(delay)
+                    continue
+                logger.error(f"[AI PROCESS][GAUSS] Request failed for {error_prefix}: {e}")
+                return None
+        if title is not None:
+            logger.error(f"[AI PROCESS][GAUSS] All attempts failed for {error_prefix} {title}")
+        else:
+            logger.error(f"[AI PROCESS][GAUSS] All attempts failed for {error_prefix}.")
+        return None
+
     def _call_ollama(self, prompt, model):
         response = requests.post(
             "http://localhost:11434/api/generate",
@@ -80,247 +175,201 @@ class AIProcessor:
             return f"[AI PROCESS][OLLAMA] Lỗi: {response.status_code} - {response.text}"
 
     def summarize_overview_gemini_vi(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
-        system_instruction = (
-            f"Bạn là một chuyên gia phân tích và tóm tắt văn bản. "
-            f"Nhiệm vụ của bạn: hãy viết một bản báo cáo tổng quát bằng tiếng Việt, "
-            f"dễ hiểu, đầy đủ ý chính, tránh lan man, tối đa {num_words} chữ. "
-            f"Kết quả nên được viết dưới dạng một đoạn văn liên tục. Không viết dạng file markdown."
+        all_content = prompts.build_overview_articles_block(results)
+        return self._call_gemini(
+            prompts.summarize_overview_system_vi(num_words),
+            prompts.summarize_overview_user_vi(all_content),
+            error_prefix="summarize all",
         )
-        all_content = ""
-        for idx, item in enumerate(results, 1):
-            all_content += f"[{idx}] {item.get('title', '')}\n {item.get('snippet', '')}\n {item.get('link', '')}\n\n"
-
-        user_prompt = (
-            f"Nội dung: {all_content}\n\n"
-            f"Hãy tóm tắt nội dung trên cho tôi."
-        )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize all")
     
     def summarize_overview_sample_vi(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI summary for overview of all articles in Vietnamese."
     
     def summarize_overview_gemini_en(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
-        system_instruction = (
-            f"You are an expert in analyzing and summarizing text. "
-            f"Your task: write a general report in English, "
-            f"easy to understand, full of main ideas, avoid rambling, maximum {num_words} words. "
-            f"The results should be written as a continuous paragraph. Do not write in markdown file."
+        all_content = prompts.build_overview_articles_block(results)
+        return self._call_gemini(
+            prompts.summarize_overview_system_en(num_words),
+            prompts.summarize_overview_user_en(all_content),
+            error_prefix="summarize all",
         )
-        all_content = ""
-        for idx, item in enumerate(results, 1):
-            all_content += f"[{idx}] {item.get('title', '')}\n {item.get('snippet', '')}\n {item.get('link', '')}\n\n"
-
-        user_prompt = (
-            f"Content: {all_content}\n\n"
-            f"Please summarize the above content for me."
-        )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize all")
     
     def summarize_overview_sample_en(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI summary for overview of all articles in English."
 
+    def summarize_overview_gauss_vi(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=None):
+        all_content = prompts.build_overview_articles_block(results)
+        return self._call_gauss(
+            prompts.summarize_overview_system_vi(num_words),
+            prompts.summarize_overview_user_vi(all_content),
+            error_prefix="summarize all",
+            model=model,
+        )
+
+    def summarize_overview_gauss_en(self, results, num_words=NUMBER_WORDS_SUMMARIZE, model=None):
+        all_content = prompts.build_overview_articles_block(results)
+        return self._call_gauss(
+            prompts.summarize_overview_system_en(num_words),
+            prompts.summarize_overview_user_en(all_content),
+            error_prefix="summarize all",
+            model=model,
+        )
+
     def summarize_content_gemini_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
-        system_instruction = (
-            f"Bạn là một chuyên gia phân tích và tóm tắt văn bản. "
-            f"Nhiệm vụ của bạn: hãy viết một bản tóm tắt bằng tiếng Việt, "
-            f"ngắn gọn, dễ hiểu, đầy đủ ý chính, tránh lan man, tối đa {num_words} chữ. "
-            f"Chỉ sử dụng thông tin có trong nội dung được cung cấp, không suy đoán hay bổ sung ngoài. "
-            f"Kết quả nên được viết dưới dạng một đoạn văn liên tục."
+        return self._call_gemini(
+            prompts.summarize_content_system_vi(num_words),
+            prompts.summarize_content_user_vi(title, snippet, link, content),
+            error_prefix="summarize",
+            title=title,
+            model=model,
         )
-        user_prompt = (
-            f"Tiêu đề: {title}\n"
-            f"Đoạn trích: {snippet}\n"
-            f"Link: {link}\n"
-            f"Nội dung: {content}\n\n"
-            f"Hãy tóm tắt nội dung trang web trên cho tôi."
-        )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
     def summarize_content_sample_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI summary for content of an artical in Vietnamese."
 
     def summarize_content_gemini_en(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
-        system_instruction = (
-            f"You are an expert in analyzing and summarizing text. "
-            f"Your task: write a summary in English, "
-            f"concise, easy to understand, full of main ideas, avoid rambling, maximum {num_words} words. "
-            f"Use only information in the provided content, do not speculate or add anything else. "
-            f"The result should be written in the form of a continuous paragraph."
+        return self._call_gemini(
+            prompts.summarize_content_system_en(num_words),
+            prompts.summarize_content_user_en(title, snippet, link, content),
+            error_prefix="summarize",
+            title=title,
+            model=model,
         )
-        user_prompt = (
-            f"Title: {title}\n"
-            f"Snippet: {snippet}\n"
-            f"Link: {link}\n"
-            f"Content: {content}\n\n"
-            f"Please summarize the content of the above website for me."
-        )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
     def summarize_content_sample_en(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI summary for content of an artical in English."
 
-    def summarize_content_ollama_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
-        prompt = (
-            f"Tiêu đề: {title}\n"
-            f"Đoạn trích: {snippet}\n"
-            f"Link: {link}\n"
-            f"Nội dung: {content}\n\n"
-            f"Bạn là một chuyên gia phân tích và tóm tắt văn bản. "
-            f"Tôi đã cung cấp cho bạn tiêu đề, đoạn trích, link và toàn bộ nội dung (text) của một trang web ở trên. "
-            f"Nhiệm vụ của bạn: hãy viết một bản tóm tắt bằng tiếng Việt, "
-            f"ngắn gọn, dễ hiểu, đầy đủ ý chính, tránh lan man, tối đa {num_words} chữ. "
-            f"Chỉ sử dụng thông tin có trong nội dung được cung cấp, không suy đoán hay bổ sung ngoài. "
-            f"Kết quả nên được viết dưới dạng một đoạn văn liên tục."
+    def summarize_content_gauss_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=None):
+        return self._call_gauss(
+            prompts.summarize_content_system_vi(num_words),
+            prompts.summarize_content_user_vi(title, snippet, link, content),
+            error_prefix="summarize",
+            title=title,
+            model=model,
         )
-        return self._call_ollama(prompt, model)
+
+    def summarize_content_gauss_en(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=None):
+        return self._call_gauss(
+            prompts.summarize_content_system_en(num_words),
+            prompts.summarize_content_user_en(title, snippet, link, content),
+            error_prefix="summarize",
+            title=title,
+            model=model,
+        )
+
+    def summarize_content_ollama_vi(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
+        return self._call_ollama(
+            prompts.summarize_content_ollama_vi(title, snippet, link, content, num_words),
+            model,
+        )
 
     def summarize_content_ollama_en(self, title, snippet, link, content, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
-        prompt = (
-            f"Title: {title}\n"
-            f"Snippet: {snippet}\n"
-            f"Link: {link}\n"
-            f"Content: {content}\n\n"
-            f"You are an expert in analyzing and summarizing text. "
-            f"I have provided you with the title, snippet, link and the entire content (text) of a website above. "
-            f"Your task: write a summary in English, "
-            f"concise, easy to understand, full of main ideas, avoid rambling, maximum {num_words} words. "
-            f"Only use the information in the provided content, do not speculate or add anything else. "
-            f"The result should be written in the form of a continuous paragraph."
+        return self._call_ollama(
+            prompts.summarize_content_ollama_en(title, snippet, link, content, num_words),
+            model,
         )
-        return self._call_ollama(prompt, model)
 
     def summarize_description_gemini_vi(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
-        system_instruction = (
-            f"Bạn là một chuyên gia phân tích và tóm tắt nội dung video. "
-            f"Bạn sẽ được cung cấp tiêu đề, mô tả và link của một video YouTube để tóm tắt lại các thông tin. "
-            f"Mô tả có thể được viết bằng nhiều ngôn ngữ khác nhau. "
-            f"Nhiệm vụ của bạn: hãy dịch mô tả sang tiếng Việt và viết một bản tóm tắt bằng tiếng Việt "
-            f"dựa trên những thông tin được cung cấp. "
-            f"Viết ngắn gọn, dễ hiểu, đầy đủ ý chính, tránh lan man, tối đa {num_words} chữ. "
-            f"Chỉ sử dụng thông tin có trong dữ liệu cung cấp. "
-            f"Kết quả nên ở dạng một đoạn văn liên tục."
+        return self._call_gemini(
+            prompts.summarize_video_system_vi(num_words),
+            prompts.summarize_video_user_vi(title, snippet, link),
+            error_prefix="summarize",
+            title=title,
+            model=model,
         )
-        user_prompt = (
-            f"Tiêu đề video: {title}\n"
-            f"Mô tả video: {snippet}\n"
-            f"Link video: {link}\n\n"
-            f"Hãy tóm tắt nội dung video trên cho tôi."
-        )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
     def summarize_description_sample_vi(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI summary for description of an artical in Vietnamese."
 
     def summarize_description_gemini_en(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
-        system_instruction = (
-            f"You are an expert in analyzing and summarizing video content. "
-            f"You will be provided with the title, description, and link of a YouTube video to summarize the information. "
-            f"The description can be written in many different languages. "
-            f"Your task: translate the description into English and write a summary in English "
-            f"based on the information provided. "
-            f"Write concisely, easy to understand, complete with main ideas, avoid rambling, maximum {num_words} words. "
-            f"Use only information in the data provided. "
-            f"The result should be in the form of a continuous paragraph."
+        return self._call_gemini(
+            prompts.summarize_video_system_en(num_words),
+            prompts.summarize_video_user_en(title, snippet, link),
+            error_prefix="summarize",
+            title=title,
+            model=model,
         )
-        user_prompt = (
-            f"Video title: {title}\n"
-            f"Video description: {snippet}\n"
-            f"Video link: {link}\n\n"
-            f"Please summarize the content of the video above for I."
-        )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="summarize", title=title, model=model)
 
     def summarize_description_sample_en(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI summary for description of an artical in English."
 
-    def summarize_description_ollama_vi(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
-        prompt = (
-            f"Tiêu đề video: {title}\n"
-            f"Mô tả video: {snippet}\n"
-            f"Link video: {link}\n\n"
-            f"Bạn là một chuyên gia phân tích và tóm tắt nội dung video. "
-            f"Tôi đã cung cấp cho bạn tiêu đề, mô tả và link của một video YouTube ở trên. "
-            f"Mô tả có thể được viết bằng nhiều ngôn ngữ khác nhau. "
-            f"Nhiệm vụ của bạn: hãy dịch mô tả sang tiếng Việt và viết một bản tóm tắt bằng tiếng Việt "
-            f"dựa trên tiêu đề và mô tả video. "
-            f"Viết ngắn gọn, dễ hiểu, đầy đủ ý chính, tránh lan man, tối đa {num_words} chữ. "
-            f"Chỉ sử dụng thông tin có trong dữ liệu cung cấp, không suy đoán hay thêm ngoài. "
-            f"Kết quả nên ở dạng một đoạn văn liên tục."
+    def summarize_description_gauss_vi(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=None):
+        return self._call_gauss(
+            prompts.summarize_video_system_vi(num_words),
+            prompts.summarize_video_user_vi(title, snippet, link),
+            error_prefix="summarize",
+            title=title,
+            model=model,
         )
-        return self._call_ollama(prompt, model)
+
+    def summarize_description_gauss_en(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=None):
+        return self._call_gauss(
+            prompts.summarize_video_system_en(num_words),
+            prompts.summarize_video_user_en(title, snippet, link),
+            error_prefix="summarize",
+            title=title,
+            model=model,
+        )
+
+    def summarize_description_ollama_vi(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
+        return self._call_ollama(
+            prompts.summarize_video_ollama_vi(title, snippet, link, num_words),
+            model,
+        )
 
     def summarize_description_ollama_en(self, title, snippet, link, num_words=NUMBER_WORDS_SUMMARIZE, model=DEFAULT_MODEL_OLLAMA):
-        prompt = (
-            f"Video title: {title}\n"
-            f"Video description: {snippet}\n"
-            f"Video link: {link}\n\n"
-            f"You are an expert in analyzing and summarizing video content. "
-            f"I have provided you with the title, description, and link of a YouTube video above. "
-            f"The description can be written in many different languages. "
-            f"Your task: translate the description into English and write a summary in English "
-            f"based on the video title and description. "
-            f"Write concisely, easily understood, complete with main ideas, avoid rambling, maximum {num_words} words. "
-            f"Use only information contained in the data provided, do not speculate or add anything else. "
-            f"The result should be in the form of a continuous paragraph."
+        return self._call_ollama(
+            prompts.summarize_video_ollama_en(title, snippet, link, num_words),
+            model,
         )
-        return self._call_ollama(prompt, model)
 
     def is_related_gemini_vi(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_GEMINI):
-        system_instruction = (
-            "Bạn là một chuyên gia đánh giá nội dung. "
-            "Nhiệm vụ: dựa trên những thông tin được cung cấp (Gồm: title, snippet và link URL), "
-            "xác định xem nội dung có liên quan tới chủ đề mà người dùng đang quan tâm hay không. "
-            "Quy ước kết quả (CHỈ IN MỘT KÝ TỰ): "
-            "'1' = liên quan; '0' = không liên quan; '2' = không chắc chắn / thông tin thiếu. "
-            "Luật chi tiết: nếu snippet hoặc title trực tiếp đề cập tới chủ đề hoặc đồng nghĩa/ngữ cảnh rất rõ → '1'. "
-            "Nếu hoàn toàn khác chủ đề → '0'. Nếu thông tin mơ hồ, quá ngắn, hoặc không đủ để quyết định → '2'. "
-            "**RẤT QUAN TRỌNG**: chỉ in đúng một ký tự (0,1 hoặc 2) và không in bất cứ ký tự, khoảng trắng, dòng mới hay giải thích nào khác. "
+        return self._call_gemini(
+            prompts.is_related_system_vi(),
+            prompts.is_related_user_vi(topic_key, title, snippet, link),
+            error_prefix="evaluate",
+            title=title,
+            model=model,
         )
-        user_prompt = (
-            f"Tiêu đề: {title}\nĐoạn trích: {snippet}\nLink: {link}\nChủ đề quan tâm: {topic_key}\n\n"
-            "Hãy đánh giá nội dung trên có liên quan đến chủ đề tôi đang quan tâm hay không. Trả về kết quả theo quy ước đã nêu."
-        )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="evaluate", title=title, model=model)
 
     def is_related_sample_vi(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI evaluate is the artical contains related information in Vietnamese."
 
-    def is_related_ollama_vi(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_OLLAMA):
-        prompt = (
-            f"Tiêu đề: {title}\nĐoạn trích: {snippet}\nLink: {link}\nTừ khóa của chủ đề: {topic_key}\n\n"
-            "Bạn là một chuyên gia đánh giá nội dung. "
-            "Tôi đã cung cấp: TIÊU ĐỀ (title), ĐOẠN TRÍCH (snippet), LINK (URL) và TỪ KHÓA CỦA CHỦ ĐỀ ở trên."
-            "Nhiệm vụ: dựa **duy nhất** trên những thông tin tôi cung cấp (title, snippet và link URL), "
-            "xác định xem nội dung có liên quan tới 'Từ khóa của chủ đề' hay không. "
-            "Quy ước kết quả (CHỈ IN MỘT KÝ TỰ): "
-            "'1' = liên quan; '0' = không liên quan; '2' = không chắc chắn / thông tin thiếu. "
-            "Luật chi tiết: nếu snippet hoặc title trực tiếp đề cập tới từ khóa hoặc đồng nghĩa/ngữ cảnh rất rõ → '1'. "
-            "Nếu hoàn toàn khác chủ đề → '0'. Nếu thông tin mơ hồ, quá ngắn, hoặc không đủ để quyết định → '2'. "
-            "**RẤT QUAN TRỌNG**: chỉ in đúng một ký tự (0,1 hoặc 2) và không in bất cứ ký tự, khoảng trắng, dòng mới hay giải thích nào khác. "
-            "Không được truy cập internet hay thêm thông tin ngoài dữ liệu đã cho. "
+    def is_related_gauss_vi(self, topic_key, title, snippet, link, model=None):
+        return self._call_gauss(
+            prompts.is_related_system_vi(),
+            prompts.is_related_user_vi(topic_key, title, snippet, link),
+            error_prefix="evaluate",
+            title=title,
+            model=model,
         )
-        return self._call_ollama(prompt, model)
+
+    def is_related_ollama_vi(self, topic_key, title, snippet, link, model=DEFAULT_MODEL_OLLAMA):
+        return self._call_ollama(
+            prompts.is_related_ollama_vi(topic_key, title, snippet, link),
+            model,
+        )
 
     def extract_info_gemini_vi(self, topic_key, text, model=DEFAULT_MODEL_GEMINI):
         if text == "":
             return ""
-        demands_text = "".join([f"    {i+1}. {d}\n" for i, d in enumerate(DEMANDS)])
-        system_instruction = (
-            f"Bạn là một AI có nhiệm vụ đọc hiểu nội dung được cung cấp và trích xuất ra các thông tin cốt lõi liên quan đến từ khóa được cung cấp."
-            f"Yêu cầu:"
-            f"- Đọc hiểu nội dung được cung cấp, nội dung có thể chứa nhiều thông tin nhiễu, trình tự sắp xếp có thể lộn xộn.\n"
-            f"- Người dùng sẽ đưa ra các thông tin mong muốn được trích xuất, hãy trả lời lần lượt theo thứ tự các mục mà người dùng yêu cầu.\n"
-            f'- Dựa trên Từ khóa chủ đề được cung cấp, trích xuất ra những thông tin có liên quan trực tiếp đến Từ khóa chủ đề đó, nếu như không có thông tin liên quan, ghi ngắn gọn "Không tìm thấy thông tin liên quan".\n'
-            f"- Không tự bổ sung thông tin hay nói về những thông tin không được đề cập trong nội dung người dùng gửi.\n"
+        demands_text = prompts.format_demands_text(DEMANDS)
+        return self._call_gemini(
+            prompts.extract_info_system_gemini_vi(),
+            prompts.extract_info_user_gemini_vi(topic_key, text, demands_text),
+            error_prefix="extract info",
+            model=model,
         )
-        user_prompt = (
-            f"Từ khóa chủ đề: {topic_key}\n"
-            f"Nội dung text trong trang web mà bạn cần xử lý: {text}\n\n"
-            f"Hãy trích xuất các thông tin liên quan từ nội dung trên dựa trên yêu cầu đã nêu."
-            f"Ưu tiên trả lời lần lượt theo thứ tự các mục sau:\n"
-            f"{demands_text}"
+
+    def extract_info_gauss_vi(self, topic_key, text, model=None):
+        if text == "":
+            return ""
+        demands_text = prompts.format_demands_text(DEMANDS)
+        return self._call_gauss(
+            prompts.extract_info_system_gemini_vi(),
+            prompts.extract_info_user_gemini_vi(topic_key, text, demands_text),
+            error_prefix="extract info",
+            model=model,
         )
-        return self._call_gemini(system_instruction, user_prompt, error_prefix="extract info", model=model)
 
     def extract_info_sample_vi(self, topic_key, text, model=DEFAULT_MODEL_GEMINI):
         return "Sample AI extract related information in the artical in Vietnamese."
@@ -328,19 +377,11 @@ class AIProcessor:
     def extract_info_ollama_vi(self, topic_key, text, model=DEFAULT_MODEL_OLLAMA):
         if text == "":
             return ""
-        demands_text = "".join([f"    {i+1}. {d}\n" for i, d in enumerate(DEMANDS)])
-        prompt = (
-            f"Từ khóa chủ đề: {topic_key}\n"
-            f"Nội dung text trong trang web mà bạn cần xử lý: {text}\n\n"
-            f"Bây giờ bạn là một AI có nhiệm vụ đọc hiểu nội dung mà tôi gửi và trích xuất ra các thông tin cốt lõi liên quan đến từ khóa được cung cấp."
-            f"Yêu cầu:"
-            f"- Đọc nội dung mà tôi đã gửi ở trên, nội dung có thể chứa nhiều thông tin nhiễu, trình tự sắp xếp có thể lộn xộn. "
-            f'- Dựa trên Từ khóa chủ đề được cung cấp, trích xuất ra những thông tin có liên quan trực tiếp đến Từ khóa chủ đề đó, nếu như không có thông tin liên quan, ghi ngắn gọn "Không tìm thấy thông tin liên quan".'
-            f"- Không tự bổ sung thông tin hay nói về những thông tin không được đề cập trong nội dung được giao."
-            f"- Hãy trả lời bằng tiếng Việt và trả lời lần lượt theo thứ tự các mục sau:\n"
-            f"{demands_text}"
+        demands_text = prompts.format_demands_text(DEMANDS)
+        return self._call_ollama(
+            prompts.extract_info_ollama_vi(topic_key, text, demands_text),
+            model,
         )
-        return self._call_ollama(prompt, model)
 
     def process_ai_article(self, results, key, service):
         total = len(results)
@@ -353,24 +394,7 @@ class AIProcessor:
             )
             try:
                 if (service == GOOGLE and IS_SUMMARIZE_GOOGLE) or (service == RSS and IS_SUMMARIZE_RSS):
-                    if (service == GOOGLE and GEMINI_FOR_GOOGLE) or (service == RSS and GEMINI_FOR_RSS):
-                        item["summary_vi"] = self.strip_thoughts(
-                            self.summarize_content_gemini_vi(
-                                item["title"],
-                                item["snippet"],
-                                item["link"],
-                                item["content"],
-                            )
-                        )
-                        item["summary_en"] = self.strip_thoughts(
-                            self.summarize_content_gemini_en(
-                                item["title"],
-                                item["snippet"],
-                                item["link"],
-                                item["content"],
-                            )
-                        )
-                    elif (service == GOOGLE and IS_TEST_AI_PROCESS) or (service == RSS and IS_TEST_AI_PROCESS):
+                    if (service == GOOGLE and IS_TEST_AI_PROCESS) or (service == RSS and IS_TEST_AI_PROCESS):
                         item["summary_vi"] = self.strip_thoughts(
                             self.summarize_content_sample_vi(
                                 item["title"],
@@ -387,6 +411,41 @@ class AIProcessor:
                                 item["content"],
                             )
                         )
+                    elif (service == GOOGLE and GAUSS_FOR_GOOGLE) or (service == RSS and GAUSS_FOR_RSS):
+                        item["summary_vi"] = self.strip_thoughts(
+                            self.summarize_content_gauss_vi(
+                                item["title"],
+                                item["snippet"],
+                                item["link"],
+                                item["content"],
+                            )
+                        )
+                        item["summary_en"] = self.strip_thoughts(
+                            self.summarize_content_gauss_en(
+                                item["title"],
+                                item["snippet"],
+                                item["link"],
+                                item["content"],
+                            )
+                        )
+                    elif (service == GOOGLE and GEMINI_FOR_GOOGLE) or (service == RSS and GEMINI_FOR_RSS):
+                        item["summary_vi"] = self.strip_thoughts(
+                            self.summarize_content_gemini_vi(
+                                item["title"],
+                                item["snippet"],
+                                item["link"],
+                                item["content"],
+                            )
+                        )
+                        item["summary_en"] = self.strip_thoughts(
+                            self.summarize_content_gemini_en(
+                                item["title"],
+                                item["snippet"],
+                                item["link"],
+                                item["content"],
+                            )
+                        )
+
                     else:
                         item["summary_vi"] = self.strip_thoughts(
                             self.summarize_content_ollama_vi(
@@ -407,25 +466,7 @@ class AIProcessor:
 
                 # Lấy kết quả đánh giá từ các mô hình
                 if (IS_EXTRACT_GOOGLE and service == GOOGLE) or (IS_EXTRACT_RSS and service == RSS):
-                    if (service == GOOGLE and GEMINI_FOR_GOOGLE) or (service == RSS and GEMINI_FOR_RSS):
-                        opinion = self.strip_thoughts(self.is_related_gemini_vi(key,item["title"],item["snippet"],item["link"],))
-                        try:
-                            opinion_value = int(opinion)
-                        except ValueError:
-                            opinion_value = 2  # N/A
-                        if opinion_value == 0:
-                            item["related"] = "Không"
-                        elif opinion_value == 1:
-                            item["related"] = "Có"
-                            item["extract"] = self.strip_thoughts(
-                                self.extract_info_gemini_vi(key, item["content"])
-                            )
-                        else:
-                            item["related"] = "Không biết"
-                            item["extract"] = self.strip_thoughts(
-                                self.extract_info_gemini_vi(key, item["content"])
-                            )
-                    elif (service == GOOGLE and IS_TEST_AI_PROCESS) or (service == RSS and IS_TEST_AI_PROCESS):
+                    if (service == GOOGLE and IS_TEST_AI_PROCESS) or (service == RSS and IS_TEST_AI_PROCESS):
                         opinion = self.strip_thoughts(self.is_related_sample_vi(key,item["title"],item["snippet"],item["link"],))
                         try:
                             opinion_value = int(opinion)
@@ -442,6 +483,44 @@ class AIProcessor:
                             item["related"] = "Không biết"
                             item["extract"] = self.strip_thoughts(
                                 self.extract_info_sample_vi(key, item["content"])
+                            )
+                    elif (service == GOOGLE and GAUSS_FOR_GOOGLE) or (service == RSS and GAUSS_FOR_RSS):
+                        opinion = self.strip_thoughts(
+                            self.is_related_gauss_vi(key, item["title"], item["snippet"], item["link"])
+                        )
+                        try:
+                            opinion_value = int(opinion)
+                        except (TypeError, ValueError):
+                            opinion_value = 2  # N/A
+                        if opinion_value == 0:
+                            item["related"] = "Không"
+                        elif opinion_value == 1:
+                            item["related"] = "Có"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_gauss_vi(key, item["content"])
+                            )
+                        else:
+                            item["related"] = "Không biết"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_gauss_vi(key, item["content"])
+                            )
+                    elif (service == GOOGLE and GEMINI_FOR_GOOGLE) or (service == RSS and GEMINI_FOR_RSS):
+                        opinion = self.strip_thoughts(self.is_related_gemini_vi(key,item["title"],item["snippet"],item["link"],))
+                        try:
+                            opinion_value = int(opinion)
+                        except ValueError:
+                            opinion_value = 2  # N/A
+                        if opinion_value == 0:
+                            item["related"] = "Không"
+                        elif opinion_value == 1:
+                            item["related"] = "Có"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_gemini_vi(key, item["content"])
+                            )
+                        else:
+                            item["related"] = "Không biết"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_gemini_vi(key, item["content"])
                             )
                     else:
                         opinions = []
@@ -505,6 +584,17 @@ class AIProcessor:
                                 item["title"], item["snippet"], item["link"]
                             )
                         )
+                    elif GAUSS_FOR_YOUTUBE:
+                        item["summary_vi"] = self.strip_thoughts(
+                            self.summarize_description_gauss_vi(
+                                item["title"], item["snippet"], item["link"]
+                            )
+                        )
+                        item["summary_en"] = self.strip_thoughts(
+                            self.summarize_description_gauss_en(
+                                item["title"], item["snippet"], item["link"]
+                            )
+                        )
                     elif GEMINI_FOR_YOUTUBE:
                         item["summary_vi"] = self.strip_thoughts(
                             self.summarize_description_gemini_vi(
@@ -549,7 +639,27 @@ class AIProcessor:
                             item["extract"] = self.strip_thoughts(
                                 self.extract_info_sample_vi(key, item["snippet"])
                             )
-                    if GEMINI_FOR_YOUTUBE:
+                    elif GAUSS_FOR_YOUTUBE:
+                        opinion = self.strip_thoughts(
+                            self.is_related_gauss_vi(key, item["title"], item["snippet"], item["link"])
+                        )
+                        try:
+                            opinion_value = int(opinion)
+                        except (TypeError, ValueError):
+                            opinion_value = 2  # N/A
+                        if opinion_value == 0:
+                            item["related"] = "Không"
+                        elif opinion_value == 1:
+                            item["related"] = "Có"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_gauss_vi(key, item["snippet"])
+                            )
+                        else:
+                            item["related"] = "Không biết"
+                            item["extract"] = self.strip_thoughts(
+                                self.extract_info_gauss_vi(key, item["snippet"])
+                            )
+                    elif GEMINI_FOR_YOUTUBE:
                         opinion = self.strip_thoughts(self.is_related_gemini_vi(key,item["title"],item["snippet"],item["link"]))
                         try:
                             opinion_value = int(opinion)
