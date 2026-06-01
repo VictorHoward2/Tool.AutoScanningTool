@@ -38,10 +38,12 @@ class ContentFetcher:
         results = self.remove_duplicate_links(results)
         
         for items in results:
-            clean_text = items['snippet']
+            items["content"] = items['snippet'] # default 
+            clean_text  = items['snippet'] # default 
             try:
-                response = self.scraper.get(items['link'])
+                response = self.scraper.get(items['link'], timeout=TIMEOUT)
                 if response.status_code == 200:
+                    clean_text = ""
                     soup = BeautifulSoup(response.text, "html.parser")
                     for tag in soup(["script", "style"]):
                         tag.decompose()

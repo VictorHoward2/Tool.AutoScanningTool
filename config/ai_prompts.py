@@ -5,7 +5,67 @@ Callers pass values like num_words, demands_text, or formatted article blocks.
 
 from __future__ import annotations
 
+import json
 from typing import Any, Iterable, Mapping
+
+# =============================================================================
+# 30 CANONICAL TAGS - Hệ thống tags chuẩn hóa cho security news aggregation
+# =============================================================================
+
+# Device Tags (6 tags) - Chọn ĐÚNG 1
+TAG_DEVICE_CANONICAL = (
+    "Smartphone",      # Includes foldable phones
+    "Computer",        # PC, laptop, desktop, workstation
+    "Server & Cloud",  # Servers, cloud infrastructure, data centers
+    "IoT Device",      # Smart home, connected devices, automotive
+    "Wearable",        # Smartwatches, fitness trackers, AR/VR
+    "Multiple Devices", # Article covers 2+ device categories
+    "Non-categorized Devices",    # Non-categorized devices, peripherals, accessories"
+)
+
+# Threat Type Tags (8 tags) - Chọn tối đa 2
+TAG_THREAT_CANONICAL = (
+    "Malware",         # Virus, trojan, spyware, mobile malware
+    "Ransomware",      # Ransomware attacks
+    "Phishing",        # Phishing, social engineering
+    "Data Breach",     # Data leaks, credential theft
+    "Zero-Day Exploit", # Unpatched vulnerabilities
+    "APT Attack",      # Advanced persistent threats, nation-state
+    "Network Attack",  # DDoS, MITM, web attacks
+    "Supply Chain Attack", # Software supply chain attacks
+)
+
+# Topic Tags (8 tags) - Chọn tối đa 2
+TAG_TOPIC_CANONICAL = (
+    "Vulnerability",   # CVE disclosures, security flaws
+    "Security Update", # Patches, updates, patch management
+    "Privacy Concern", # Data collection, tracking, privacy issues
+    "Cybercrime",      # Hacker arrests, cyber gangs, fraud
+    "Security Research", # New findings, threat intelligence
+    "Policy & Regulation", # Laws, compliance, GDPR
+    "AI",     # AI vulnerabilities, deepfakes, AI threats
+    "Cloud Security",  # Cloud breaches, misconfigurations
+)
+
+# Brand Tags (8 tags) - Chọn tối đa 2
+TAG_BRAND_CANONICAL = (
+    "Samsung",         # Samsung products only
+    "Apple",           # iPhone, iPad, Mac, iOS, Apple Watch
+    "Google",          # Pixel, Google services
+    "Microsoft",       # Windows, Surface, Azure, Office
+    "Android",         # General Android (non-brand specific)
+    "iOS",             # iOS-specific news
+    "Windows",         # Windows-specific news
+    "China Brand",     # Huawei, Xiaomi, OPPO, Vivo, etc.
+    "Github",
+)
+
+# All canonical tags combined for validation
+ALL_CANONICAL_TAGS = (
+    TAG_DEVICE_CANONICAL + TAG_THREAT_CANONICAL + 
+    TAG_TOPIC_CANONICAL + TAG_BRAND_CANONICAL
+)
+TAG_CANONICAL_SET = set(ALL_CANONICAL_TAGS)  # For O(1) lookup
 
 
 def build_overview_articles_block(results: Iterable[Mapping[str, Any]]) -> str:
@@ -266,3 +326,243 @@ def extract_info_ollama_vi(topic_key: str, text: str, demands_text: str) -> str:
 
 def format_demands_text(demands: Iterable[str]) -> str:
     return "".join(f"    {i+1}. {d}\n" for i, d in enumerate(demands))
+
+
+def normalize_tags_system() -> str:
+    """
+    System prompt for tag normalization.
+    Uses 30 canonical tags across 4 categories.
+    Enhanced with strict evidence requirements.
+    """
+    device_tags = ", ".join(f'"{d}"' for d in TAG_DEVICE_CANONICAL)
+    threat_tags = ", ".join(f'"{t}"' for t in TAG_THREAT_CANONICAL)
+    topic_tags = ", ".join(f'"{t}"' for t in TAG_TOPIC_CANONICAL)
+    brand_tags = ", ".join(f'"{b}"' for b in TAG_BRAND_CANONICAL)
+    
+    return (
+        "You normalize tags for a security news report. "
+        "Your task is to assign standardized tags from a FIXED LIST of 30 canonical tags only.\n\n"
+        
+        "=== CRITICAL RULES (READ CAREFULLY) ===\n\n"
+        
+        "1. ONLY use tags from the canonical list below. DO NOT invent new tags.\n\n"
+        
+        "2. EVIDENCE REQUIREMENT - MOST IMPORTANT RULE:\n"
+        "   BEFORE assigning ANY tag, you MUST find at least ONE specific keyword or phrase in the article content.\n"
+        "   - If you cannot find evidence for a tag, DO NOT assign that tag.\n"
+        "   - It is BETTER to have FEWER tags than WRONG tags.\n"
+        "   - Ask yourself: 'What exact word/phrase in the article supports this tag?'\n"
+        "   - If the answer is unclear or requires assumption, SKIP that tag.\n\n"
+        
+        "3. DEVICE TAG (MANDATORY - Exactly 1 required):\n"
+        f"   Choose EXACTLY ONE from: {device_tags}\n"
+        "   - Smartphone: Look for 'phone', 'mobile', 'Galaxy', 'iPhone', 'Pixel', 'smartphone'\n"
+        "   - Computer: Look for 'PC', 'laptop', 'desktop', 'Mac', 'MacBook', 'workstation'\n"
+        "   - Server & Cloud: Look for 'server', 'cloud', 'AWS', 'Azure', 'data center'\n"
+        "   - IoT Device: Look for 'smart home', 'IoT', 'connected', 'automotive', 'router', 'camera'\n"
+        "   - Wearable: Look for 'watch', 'wearable', 'fitness tracker', 'AR', 'VR', 'headset'\n"
+        "   - Multiple Devices: Only if article explicitly covers 2+ device categories equally\n"
+        "   - Non-categorized Devices: Peripherals, accessories, devices not fitting above categories\n\n"
+        
+        "4. TAG CATEGORIES & LIMITS:\n"
+        f"   Threat Type (min 0, max 2): {threat_tags}\n"
+        f"   Topic (min 0, max 2): {topic_tags}\n"
+        f"   Brand/Platform (min 0, max 2): {brand_tags}\n\n"
+        
+        "5. TOTAL TAG LIMIT: Minimum 1 tag (device), Maximum 6 tags (1 device + up to 5 others)\n\n"
+        
+        "6. EVIDENCE PRIORITY:\n"
+        "   Base tags on this order: title > ai_summary_en > snippet\n"
+        "   Raw RSS tags are hints only - IGNORE if not supported by evidence in title/summary/snippet\n\n"
+        
+        "7. BRAND TAGGING RULES - STRICT:\n"
+        "   - Samsung: ONLY when 'Samsung' or Samsung product (Galaxy, Knox, One UI, Bixby) is mentioned\n"
+        "   - Apple: ONLY for iPhone, iPad, Mac, iOS, macOS, Apple Watch, AirPods\n"
+        "   - Google: ONLY for Google products (Pixel, Chrome, Gmail, Google Cloud, Android - stock)\n"
+        "   - Microsoft: ONLY for Windows, Surface, Azure, Office 365, Microsoft 365, Edge\n"
+        "   - Android: ONLY for general/stock Android issues, NOT Samsung/Huawei/Xiaomi specific\n"
+        "   - iOS: ONLY for iOS-specific features/issues (not general mobile security)\n"
+        "   - Windows: ONLY for Windows-specific news (not general PC security)\n"
+        "   - China Brand: ONLY for Huawei, Xiaomi, OPPO, Vivo, Honor, OnePlus, Realme\n"
+        "   - Github: ONLY for Github-specific news, security issues on Github platform\n"
+        "   ⚠️ If brand is not explicitly mentioned, DO NOT assign brand tag.\n\n"
+        
+        "8. WHEN NOT TO TAG (Examples):\n"
+        "   - 'Security' mentioned generally → Do NOT add 'Vulnerability' without specific CVE/flaw\n"
+        "   - 'Hack' mentioned without details → Do NOT add 'Malware' or 'Data Breach'\n"
+        "   - 'Update' without security context → Do NOT add 'Security Update'\n"
+        "   - 'China' mentioned → Do NOT add 'China Brand' without specific brand name\n"
+        "   - 'Cloud' mentioned → Do NOT add 'Cloud Security' without security context\n"
+        "   - 'AI' mentioned → Do NOT add 'AI' tag unless AI is central to security topic\n"
+        "   - Article about 'smartphone security' → Do NOT add both 'Malware' and 'Phishing' without evidence of both\n\n"
+        
+        "9. CONFIDENCE CHECK - Before finalizing:\n"
+        "   For each tag you plan to assign, verify:\n"
+        "   ✓ Can I point to a specific word/phrase supporting this tag?\n"
+        "   ✓ Is this tag directly related to the MAIN topic (not just mentioned in passing)?\n"
+        "   ✓ Would another person agree this tag is appropriate based on the evidence?\n"
+        "   If any answer is 'no' or 'unsure', SKIP that tag.\n\n"
+        
+        "10. OUTPUT FORMAT:\n"
+        "   - Reply with ONLY valid JSON: {\"tags\": [\"Tag1\", \"Tag2\", ...]}\n"
+        "   - No markdown, no explanation, no other text\n"
+        "   - Tags in order: Device → Threat Type → Topic → Brand\n\n"
+        
+        "11. DO NOT:\n"
+        "   - Invent tags outside the 30 canonical tags\n"
+        "   - Use generic terms like News, Blog, Security, Cyber, Technology\n"
+        "   - Output the article title as a tag\n"
+        "   - Add tags unsupported by article content\n"
+        "   - Use CVE numbers as tags (use 'Vulnerability' instead)\n"
+        "   - Guess or assume information not present in the content\n"
+        "   - Tag based on raw RSS tags alone without verification\n"
+    )
+
+
+def normalize_tags_user(
+    topic_key: str,
+    title: str,
+    snippet: str,
+    summary_en: str,
+    tags_raw: list[str],
+    max_tags: int = 6,
+) -> str:
+    """
+    User prompt for tag normalization.
+    
+    Args:
+        topic_key: The topic keyword for context
+        title: Article title
+        snippet: Article snippet/description
+        summary_en: AI-generated summary in English
+        tags_raw: Raw tags from RSS feed (hints only)
+        max_tags: Maximum number of tags to output (default: 6)
+    
+    Returns:
+        Formatted user prompt for tag normalization
+    """
+    tags_json = json.dumps(tags_raw, ensure_ascii=False)
+    
+    # Build canonical tags reference
+    all_tags_list = list(ALL_CANONICAL_TAGS)
+    canonical_tags_json = json.dumps(all_tags_list, ensure_ascii=False)
+    
+    return (
+        f"=== ARTICLE INPUT ===\n"
+        f"topic_key: {topic_key}\n\n"
+        f"title:\n{title}\n\n"
+        f"snippet:\n{snippet}\n\n"
+        f"ai_summary_en:\n{summary_en}\n\n"
+        f"tags_raw (JSON array, hints only - may be empty):\n{tags_json}\n\n"
+        
+        f"=== YOUR TASK ===\n"
+        f"Assign tags from the 30 canonical tags listed below.\n"
+        f"Maximum {max_tags} tags total.\n"
+        f"Requirements:\n"
+        f"  - Exactly 1 device tag (mandatory)\n"
+        f"  - Up to 2 threat type tags\n"
+        f"  - Up to 2 topic tags\n"
+        f"  - Up to 2 brand/platform tags\n"
+        f"Return ONLY JSON: {{\"tags\": [...]}}\n\n"
+        
+        f"=== 30 CANONICAL TAGS (USE ONLY THESE) ===\n"
+        f"{canonical_tags_json}"
+    )
+
+
+def normalize_tags_ollama_prompt(
+    topic_key: str,
+    title: str,
+    snippet: str,
+    summary_en: str,
+    tags_raw: list[str],
+    max_tags: int,
+) -> str:
+    """
+    Combined prompt for Ollama tag normalization.
+    """
+    return (
+        normalize_tags_system()
+        + "\n\n--- TASK ---\n\n"
+        + normalize_tags_user(
+            topic_key=topic_key,
+            title=title,
+            snippet=snippet,
+            summary_en=summary_en,
+            tags_raw=tags_raw,
+            max_tags=max_tags,
+        )
+    )
+
+
+def validate_normalized_tags(tags: list[str]) -> tuple[bool, list[str], list[str]]:
+    """
+    Validate that normalized tags are from the canonical list.
+    
+    Args:
+        tags: List of tags to validate
+    
+    Returns:
+        Tuple of (is_valid, valid_tags, invalid_tags)
+        - is_valid: True if all tags are canonical
+        - valid_tags: List of tags that are in the canonical set
+        - invalid_tags: List of tags that are NOT in the canonical set
+    """
+    valid_tags = []
+    invalid_tags = []
+    
+    for tag in tags:
+        if tag in TAG_CANONICAL_SET:
+            valid_tags.append(tag)
+        else:
+            invalid_tags.append(tag)
+    
+    is_valid = len(invalid_tags) == 0
+    return is_valid, valid_tags, invalid_tags
+
+
+def normalize_tags_output(
+    tags: list[str],
+    max_tags: int = 6,
+    ensure_device_tag: bool = True,
+) -> tuple[list[str], list[str]]:
+    """
+    Normalize and clean tag output.
+    
+    Args:
+        tags: List of tags from AI output
+        max_tags: Maximum number of tags to return (default: 6)
+        ensure_device_tag: If True, ensure at least one device tag is present
+    
+    Returns:
+        Tuple of (normalized_tags, warnings)
+        - normalized_tags: Cleaned list of canonical tags
+        - warnings: List of warning messages for any issues
+    """
+    warnings = []
+    normalized = []
+    device_tag_found = False
+    
+    # Validate and filter tags
+    is_valid, valid_tags, invalid_tags = validate_normalized_tags(tags)
+    
+    if invalid_tags:
+        warnings.append(f"Removed {len(invalid_tags)} non-canonical tags: {invalid_tags}")
+    
+    # Check for device tag
+    if ensure_device_tag:
+        for tag in valid_tags:
+            if tag in TAG_DEVICE_CANONICAL:
+                device_tag_found = True
+                break
+        if not device_tag_found:
+            warnings.append("No device tag found - article may need manual review")
+    
+    # Limit to max_tags
+    if len(valid_tags) > max_tags:
+        warnings.append(f"Truncated from {len(valid_tags)} to {max_tags} tags")
+        normalized = valid_tags[:max_tags]
+    else:
+        normalized = valid_tags
+    
+    return normalized, warnings

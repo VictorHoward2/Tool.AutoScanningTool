@@ -1,7 +1,9 @@
+import json
 import re
 import time
 import requests
 import traceback
+from copy import deepcopy
 from core.logger import logger
 from config.settings import *
 from config import ai_prompts as prompts
@@ -383,6 +385,181 @@ class AIProcessor:
             model,
         )
 
+    def _parse_json_tags_response(self, text, max_tags):
+        if not text:
+            return None
+        t = self.strip_thoughts(text)
+        t = re.sub(r"^```(?:json)?\s*", "", t, flags=re.IGNORECASE | re.MULTILINE)
+        t = re.sub(r"\s*```\s*$", "", t, flags=re.MULTILINE).strip()
+        try:
+            obj = json.loads(t)
+        except json.JSONDecodeError:
+            m = re.search(r"\{[\s\S]*\}", t)
+            if not m:
+                return None
+            try:
+                obj = json.loads(m.group(0))
+            except json.JSONDecodeError:
+                return None
+        tags = obj.get("tags")
+        if not isinstance(tags, list):
+            return None
+        out = []
+        seen = set()
+        for x in tags:
+            s = str(x).strip()
+            if not s:
+                continue
+            if len(s) > 48:
+                s = s[:48].rstrip()
+            low = s.lower()
+            if low in seen:
+                continue
+            seen.add(low)
+            out.append(s)
+            if len(out) >= max_tags:
+                break
+        return out
+
+    def _finalize_normalized_tags(self, tags, max_tags):
+        """
+        Normalize tags using the 50 canonical tags system.
+        Ensures all output tags are from the canonical list.
+        """
+        tags = [str(t).strip() for t in (tags or []) if str(t).strip()]
+        
+        # Filter to only canonical tags
+        canonical_tags = []
+        for t in tags:
+            if t in prompts.TAG_CANONICAL_SET:
+                canonical_tags.append(t)
+            else:
+                # Try case-insensitive match
+                for ct in prompts.ALL_CANONICAL_TAGS:
+                    if ct.lower() == t.lower():
+                        canonical_tags.append(ct)
+                        break
+        
+        # Deduplicate
+        seen = set()
+        deduped = []
+        for t in canonical_tags:
+            low = t.lower()
+            if low in seen:
+                continue
+            seen.add(low)
+            deduped.append(t)
+        
+        # Ensure exactly one device tag
+        device_by_lower = {d.lower(): d for d in prompts.TAG_DEVICE_CANONICAL}
+        device_tags = [t for t in deduped if t.lower() in device_by_lower]
+        others = [t for t in deduped if t.lower() not in device_by_lower]
+        
+        if device_tags:
+            device = device_by_lower[device_tags[0].lower()]
+        else:
+            # No device tag found - try to infer from context or use default
+            device = "Multiple Devices"  # Safer default than "Other Electronics"
+        
+        # Build output with device tag first
+        out = [device] + others
+        
+        # Limit to max_tags
+        if len(out) > max_tags:
+            out = [device] + others[: max_tags - 1]
+        
+        return out
+
+    def normalize_tags_sample_json(self):
+        return '{"tags": ["Phishing", "Smartphone", "Email Security"]}'
+
+    def normalize_tags_gauss(
+        self, topic_key, title, snippet, summary_en, tags_raw, max_tags, model=None
+    ):
+        return self._call_gauss(
+            prompts.normalize_tags_system(),
+            prompts.normalize_tags_user(
+                topic_key, title, snippet, summary_en, tags_raw, max_tags
+            ),
+            error_prefix="normalize tags",
+            title=title,
+            model=model,
+        )
+
+    def normalize_tags_gemini(
+        self, topic_key, title, snippet, summary_en, tags_raw, max_tags, model=DEFAULT_MODEL_GEMINI
+    ):
+        return self._call_gemini(
+            prompts.normalize_tags_system(),
+            prompts.normalize_tags_user(
+                topic_key, title, snippet, summary_en, tags_raw, max_tags
+            ),
+            error_prefix="normalize tags",
+            title=title,
+            model=model,
+        )
+
+    def normalize_tags_ollama(
+        self, topic_key, title, snippet, summary_en, tags_raw, max_tags, model=None
+    ):
+        model = model or (AI_MODELS[0] if AI_MODELS else DEFAULT_MODEL_OLLAMA)
+        prompt = prompts.normalize_tags_ollama_prompt(
+            topic_key, title, snippet, summary_en, tags_raw, max_tags
+        )
+        return self._call_ollama(prompt, model)
+
+    def _normalize_rss_item_tags(self, item, topic_key):
+        """Chuẩn hóa item['tags'] cho RSS; giữ tag cũ nếu API/parse lỗi."""
+        raw = item.get("tags") or []
+        if isinstance(raw, list):
+            cleaned = [str(t).strip() for t in raw if str(t).strip()]
+        else:
+            cleaned = []
+        title = str(item.get("title", "") or "")
+        snippet = str(item.get("snippet", "") or "")
+        summary_en = str(item.get("summary_en", "") or "")
+        has_context = bool(title.strip() and (summary_en.strip() or snippet.strip()))
+        if not cleaned and not has_context:
+            return
+        if cleaned:
+            item["tags_raw"] = list(cleaned)
+        max_tags = int(TAGS_NORMALIZE_MAX) if TAGS_NORMALIZE_MAX else 8
+        if max_tags < 1:
+            max_tags = 8
+        if IS_TEST_AI_PROCESS:
+            raw_json = self.normalize_tags_sample_json()
+        elif GAUSS_FOR_RSS:
+            raw_json = self.normalize_tags_gauss(
+                topic_key, title, snippet, summary_en, cleaned, max_tags
+            )
+        elif GEMINI_FOR_RSS:
+            raw_json = self.normalize_tags_gemini(
+                topic_key, title, snippet, summary_en, cleaned, max_tags
+            )
+        else:
+            raw_json = self.normalize_tags_ollama(
+                topic_key, title, snippet, summary_en, cleaned, max_tags
+            )
+        if not raw_json:
+            logger.warning(
+                "[AI PROCESS][TAGS] Model trả rỗng/None, giữ tag hiện tại: %s",
+                title[:80],
+            )
+            return
+        parsed = self._parse_json_tags_response(raw_json, max_tags)
+        if parsed is None:
+            logger.warning(
+                "[AI PROCESS][TAGS] Parse JSON thất bại, giữ tag hiện tại: %s",
+                title[:80],
+            )
+            return
+        item["tags"] = self._finalize_normalized_tags(parsed, max_tags)
+        logger.info(
+            "[AI PROCESS][TAGS] Đã chuẩn hóa %s tag cho: %s",
+            len(item["tags"]),
+            title[:60],
+        )
+
     def process_ai_article(self, results, key, service):
         total = len(results)
         if not total:
@@ -558,6 +735,9 @@ class AIProcessor:
                             item["extract"] = self.strip_thoughts(
                                 self.extract_info_ollama_vi(key, item["content"])
                             )
+
+                if service == RSS and IS_NORMALIZE_TAGS_RSS:
+                    self._normalize_rss_item_tags(item, key)
             except Exception as e:
                 logger.error(f"[AI PROCESS] Đã xảy ra lỗi: {e}")
                 traceback.print_exc()
@@ -718,3 +898,143 @@ class AIProcessor:
                 logger.error(f"[AI PROCESS] Đã xảy ra lỗi: {e}")
                 traceback.print_exc()
         return results
+
+    def _normalize_related_value(self, raw_value):
+        try:
+            return int(str(raw_value).strip())
+        except (TypeError, ValueError):
+            return 2
+
+    def _match_keywords(self, text, keywords):
+        lowered = (text or "").lower()
+        return [kw for kw in keywords if kw and kw.lower() in lowered]
+
+    def _pick_fallback_target(self, profile):
+        return profile.get("fallback_target_section") or RSS_ROUTING_DEFAULT_TARGET
+
+    def _is_related_for_profile(self, profile, item):
+        topic_key = profile.get("topic_key_for_ai", TOPIC_KEYWORD)
+        title = item.get("title", "")
+        snippet = item.get("snippet", "")
+        link = item.get("link", "")
+
+        if IS_TEST_AI_PROCESS:
+            opinion = self.strip_thoughts(
+                self.is_related_sample_vi(topic_key, title, snippet, link)
+            )
+            return self._normalize_related_value(opinion)
+
+        if GAUSS_FOR_RSS:
+            opinion = self.strip_thoughts(
+                self.is_related_gauss_vi(topic_key, title, snippet, link)
+            )
+            return self._normalize_related_value(opinion)
+
+        if GEMINI_FOR_RSS:
+            opinion = self.strip_thoughts(
+                self.is_related_gemini_vi(topic_key, title, snippet, link)
+            )
+            return self._normalize_related_value(opinion)
+
+        opinion = self.strip_thoughts(
+            self.is_related_ollama_vi(topic_key, title, snippet, link)
+        )
+        return self._normalize_related_value(opinion)
+
+    def route_section_items(self, items, profile):
+        kept_items = []
+        uncertain_items = []
+        moved_items_by_target = {}
+        metrics = {
+            "total": len(items),
+            "kept": 0,
+            "moved": 0,
+            "uncertain": 0,
+            "rule_hits": 0,
+            "ai_hits": 0,
+            "ai_only": bool(profile.get("ai_only", False)),
+        }
+
+        fallback_target = self._pick_fallback_target(profile)
+        uncertain_policy = (profile.get("uncertain_policy") or "keep").lower()
+        ai_only = bool(profile.get("ai_only", False))
+        positive_keywords = profile.get("positive_keywords", [])
+        negative_keywords = profile.get("negative_keywords", [])
+
+        for item in items:
+            candidate = deepcopy(item)
+            text_blob = " ".join(
+                [
+                    str(candidate.get("title", "")),
+                    str(candidate.get("snippet", "")),
+                    str(candidate.get("content", "")),
+                ]
+            )
+
+            decision = None
+            if not ai_only:
+                pos_matches = self._match_keywords(text_blob, positive_keywords)
+                neg_matches = self._match_keywords(text_blob, negative_keywords)
+                if pos_matches and not neg_matches:
+                    decision = 1
+                    metrics["rule_hits"] += 1
+                elif neg_matches and not pos_matches:
+                    decision = 0
+                    metrics["rule_hits"] += 1
+
+            if decision is None:
+                decision = self._is_related_for_profile(profile, candidate)
+                metrics["ai_hits"] += 1
+
+            if decision == 1:
+                kept_items.append(candidate)
+                metrics["kept"] += 1
+                continue
+
+            if decision == 0:
+                moved_items_by_target.setdefault(fallback_target, []).append(candidate)
+                metrics["moved"] += 1
+                continue
+
+            metrics["uncertain"] += 1
+            uncertain_items.append(candidate)
+            if uncertain_policy == "move":
+                moved_items_by_target.setdefault(fallback_target, []).append(candidate)
+                metrics["moved"] += 1
+            else:
+                kept_items.append(candidate)
+                metrics["kept"] += 1
+
+        return {
+            "kept_items": kept_items,
+            "moved_items_by_target": moved_items_by_target,
+            "uncertain_items": uncertain_items,
+            "metrics": metrics,
+        }
+
+    def route_rss_sections(self, sections_data, section_profiles):
+        routed_sections = {name: list(items) for name, items in sections_data.items()}
+        section_metrics = {}
+
+        for section_name, profile in section_profiles.items():
+            items = routed_sections.get(section_name, [])
+            routed = self.route_section_items(items, profile)
+            routed_sections[section_name] = routed["kept_items"]
+            section_metrics[section_name] = routed["metrics"]
+
+            for target_name, moved_items in routed["moved_items_by_target"].items():
+                routed_sections.setdefault(target_name, [])
+                routed_sections[target_name].extend(moved_items)
+
+        for section_name, items in routed_sections.items():
+            seen = set()
+            deduped = []
+            for item in items:
+                dedupe_key = item.get("link") or f"{item.get('title','')}|{item.get('published','')}"
+                if dedupe_key in seen:
+                    continue
+                seen.add(dedupe_key)
+                deduped.append(item)
+            routed_sections[section_name] = deduped
+
+        return routed_sections, section_metrics

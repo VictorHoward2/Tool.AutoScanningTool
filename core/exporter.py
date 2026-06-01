@@ -1,18 +1,15 @@
+"""Facade re-export: import từ đây thay vì `core.export` trực tiếp.
+
+Các hàm thật nằm trong package `core.export`:
+- Excel: `core.export.excel`
+- HTML refer (Google/YouTube, một section): `core.export.refer_list_html`
+- HTML báo cáo RSS đầy đủ: `core.export.full_report`
+"""
+
 from core.export import (
-    classify_security_article,
     export_full_security_report_html,
-    export_global_information_html_bilingual,
-    export_global_information_html_en,
-    export_global_information_html_vi,
-    export_hot_android_issues_html_bilingual,
-    export_hot_android_issues_html_en,
-    export_hot_android_issues_html_vi,
-    export_new_features_html_bilingual,
-    export_new_features_html_en,
-    export_new_features_html_vi,
-    export_patent_trend_html_bilingual,
-    export_patent_trend_html_en,
-    export_patent_trend_html_vi,
+    export_full_security_report_html_from_json,
+    export_rss_report_to_json,
     export_to_excel,
     export_to_html_bilingual,
     export_to_html_en,
@@ -21,23 +18,12 @@ from core.export import (
 )
 
 __all__ = [
-    "classify_security_article",
     "export_to_excel",
     "export_to_html_template",
     "export_to_html_vi",
     "export_to_html_en",
     "export_to_html_bilingual",
     "export_full_security_report_html",
-    "export_global_information_html_vi",
-    "export_global_information_html_en",
-    "export_global_information_html_bilingual",
-    "export_new_features_html_vi",
-    "export_new_features_html_en",
-    "export_new_features_html_bilingual",
-    "export_hot_android_issues_html_vi",
-    "export_hot_android_issues_html_en",
-    "export_hot_android_issues_html_bilingual",
-    "export_patent_trend_html_vi",
-    "export_patent_trend_html_en",
-    "export_patent_trend_html_bilingual",
+    "export_rss_report_to_json",
+    "export_full_security_report_html_from_json",
 ]

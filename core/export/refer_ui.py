@@ -5,7 +5,7 @@ from config.settings import DURATION, NOW, OUTPUT_PATH
 
 
 def _project_root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def load_refer_template(template_rel_path: str) -> str:

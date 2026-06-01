@@ -105,7 +105,7 @@
   function imageOrPlaceholder(item, cls, grad) {
     var url = (item.image || '').toString().trim();
     if (url) {
-      return '<img src="' + escapeHtml(url) + '" alt="article image" class="' + cls + '"/>';
+      return '<img src="' + escapeHtml(url) + '" alt="article image" class="' + cls + '" referrerpolicy="no-referrer" />';
     }
     return '<div class="' + cls + ' ' + grad + '"></div>';
   }

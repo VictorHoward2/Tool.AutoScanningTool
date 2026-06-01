@@ -21,11 +21,11 @@ class RSSSearch:
                             }
                         )
         
-    def extract_image_from_article(self, url, min_height=500, min_width=400):
-        forbidden = ["facebook.com", "instagram.com", "x.com", "telegram.org"]
+    def extract_image_from_article(self, url, min_height=MIN_HEIGHT_IMG, min_width=MIN_WIDTH_IMG):
+        forbidden = ["facebook.com", "instagram.com", "x.com", "telegram.org", ".svg", ".gif", "mediaoutreach.png"]
         try:
 
-            response = self.scraper.get(url)
+            response = self.scraper.get(url, timeout=TIMEOUT)
             response.raise_for_status()
             
             # Phân tích HTML
@@ -49,7 +49,7 @@ class RSSSearch:
                     if img_url.startswith(('http://', 'https://')) and not img_url.endswith(".svg") and not any(keyword in img_url for keyword in forbidden):
                         try:
                             # Tải hình ảnh
-                            img_response = self.scraper.get(img_url)
+                            img_response = self.scraper.get(img_url, timeout=TIMEOUT)
                             img_response.raise_for_status()
                             
                             image = Image.open(BytesIO(img_response.content))
@@ -68,12 +68,12 @@ class RSSSearch:
         except Exception as e:
             logger.error(f"[RSS] In article ({url}) - Undefined error: {str(e)}")
             traceback.print_exc()
-            return None
+            return "https://image.samsungsds.com/en/news/__icsFiles/afieldfile/2025/02/20/t.jpg"
 
     def fetch_recent_posts(self, days=DURATION, source = RSS_GLOBAL_INFOR):
         recent_posts = []
         for rss_url in source:
-            response = self.scraper.get(rss_url)
+            response = self.scraper.get(rss_url, timeout=TIMEOUT)
             
             os.makedirs("test", exist_ok=True)
             with open("test\\sample.html", "w", encoding="utf-8") as f:
@@ -84,7 +84,7 @@ class RSSSearch:
                 json.dump(feed, f, ensure_ascii=False, indent=4, default=str)
             duration = datetime.now(timezone.utc) - timedelta(days=days)
 
-            for entry in feed.entries:
+            for entry in feed.entries[:7]:
                 if hasattr(entry, "published_parsed"):
                     pub = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
                 elif hasattr(entry, "updated_parsed"):

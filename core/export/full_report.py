@@ -1,3 +1,5 @@
+"""Sinh một file HTML báo cáo bảo mật tổng hợp (RSS): nhiều section, i18n, bilingual."""
+
 import html
 import json
 import os
@@ -8,6 +10,7 @@ from config.settings import DURATION, NOW, OUTPUT_PATH, TODAY
 from core.ai_processor import AIProcessor
 from core.logger import logger
 from utils.time_utils import format_published
+from config.settings import *
 
 I18N_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "config", "export_i18n.json"))
 FULL_REPORT_ADMIN_JS_PATH = os.path.join(os.path.dirname(__file__), "full_report_admin.js")
@@ -86,7 +89,7 @@ def _item_image(item: Dict[str, Any]) -> str:
 def _image_or_placeholder(item: Dict[str, Any], css_class: str, fallback_gradient: str) -> str:
     image_url = _item_image(item)
     if image_url:
-        return f'<img src="{html.escape(image_url)}" alt="article image" class="{css_class}"/>'
+        return f'<img src="{html.escape(image_url)}" alt="article image" class="{css_class}" referrerpolicy="no-referrer"/>'
     return f'<div class="{css_class} {fallback_gradient}"></div>'
 
 
@@ -111,6 +114,13 @@ def _overview_plain_pair(data: List[Dict[str, Any]]) -> tuple[str, str]:
     if not data:
         return ("", "")
     ai = AIProcessor()
+
+    if IS_TEST_AI_PROCESS:
+        return (
+            ai.summarize_overview_sample_vi(data) or "",
+            ai.summarize_overview_sample_en(data) or "",
+        )
+
     return (
         ai.summarize_overview_gauss_vi(data) or "",
         ai.summarize_overview_gauss_en(data) or "",
@@ -432,6 +442,11 @@ def export_full_security_report_html(
     patent_trend_data: Optional[List[Dict[str, Any]]] = None,
     lang: str = "vi",
 ):
+    """Gộp nhiều luồng RSS thành một HTML: global, new features (3 nhóm), hot issues, patent trend.
+
+    Tham số `*_data` tùy chọn: None thì fallback sang `global_information_data` hoặc
+    dữ liệu mặc định theo logic trong hàm. `lang`: "vi" | "en" | "bilingual".
+    """
     i18n = _load_i18n()
     if not os.path.exists(OUTPUT_PATH):
         os.makedirs(OUTPUT_PATH)
@@ -887,3 +902,141 @@ def export_full_security_report_html(
 
     logger.info(f"[EXPORT] Xuất báo cáo tổng hợp thành công ra {filepath}")
     return filepath
+
+
+def export_rss_report_to_json(
+    global_information_data: List[Dict[str, Any]],
+    service: str,
+    new_features_samsung_data: Optional[List[Dict[str, Any]]] = None,
+    new_features_iphone_data: Optional[List[Dict[str, Any]]] = None,
+    new_features_china_data: Optional[List[Dict[str, Any]]] = None,
+    hot_android_issues_data: Optional[List[Dict[str, Any]]] = None,
+    patent_trend_data: Optional[List[Dict[str, Any]]] = None,
+    lang: str = "bilingual",
+    output_path: Optional[str] = None,
+) -> str:
+    """Xuất toàn bộ dữ liệu RSS ra file JSON để lưu trữ hoặc chia sẻ.
+    
+    Hàm này thu thập tất cả thông tin cần thiết từ các bài báo và lưu vào JSON.
+    Kết quả có thể được dùng lại bởi hàm `export_full_security_report_html_from_json`.
+    
+    Args:
+        global_information_data: Dữ liệu section Global Information
+        service: Tên service (ví dụ: "RSS")
+        new_features_samsung_data: Dữ liệu section New Features Samsung
+        new_features_iphone_data: Dữ liệu section New Features iPhone
+        new_features_china_data: Dữ liệu section New Features China
+        hot_android_issues_data: Dữ liệu section Hot Android Issues
+        patent_trend_data: Dữ liệu section Patent Trend
+        lang: Ngôn ngữ output ("vi", "en", "bilingual")
+        output_path: Đường dẫn file output (optional, mặc định tạo tự động)
+    
+    Returns:
+        Đường dẫn file JSON đã xuất
+    """
+    if not os.path.exists(OUTPUT_PATH):
+        os.makedirs(OUTPUT_PATH)
+    
+    # Fallback dữ liệu mặc định
+    _nf_default = global_information_data
+    new_features_samsung_data = new_features_samsung_data if new_features_samsung_data is not None else _nf_default
+    new_features_iphone_data = new_features_iphone_data if new_features_iphone_data is not None else _nf_default
+    new_features_china_data = new_features_china_data if new_features_china_data is not None else _nf_default
+    hot_android_issues_data = hot_android_issues_data if hot_android_issues_data is not None else global_information_data
+    patent_trend_data = patent_trend_data if patent_trend_data is not None else global_information_data
+    
+    # Xác định các trường cần thiết cho mỗi bài báo
+    def extract_article_fields(item: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "title": item.get("title", ""),
+            "link": item.get("link", ""),
+            "published": item.get("published", ""),
+            "snippet": item.get("snippet", ""),
+            "summary_vi": item.get("summary_vi", ""),
+            "summary_en": item.get("summary_en", ""),
+            "tags": item.get("tags", []),
+            "image": item.get("image", ""),
+        }
+    
+    # Tạo cấu trúc JSON
+    report_data = {
+        "metadata": {
+            "service": service,
+            "lang": lang,
+            "timestamp": NOW,
+            "duration": DURATION,
+            "exported_at": TODAY,
+        },
+        "sections": {
+            "global_information": [extract_article_fields(item) for item in global_information_data],
+            "new_features_samsung": [extract_article_fields(item) for item in new_features_samsung_data],
+            "new_features_iphone": [extract_article_fields(item) for item in new_features_iphone_data],
+            "new_features_china": [extract_article_fields(item) for item in new_features_china_data],
+            "hot_android_issues": [extract_article_fields(item) for item in hot_android_issues_data],
+            "patent_trend": [extract_article_fields(item) for item in patent_trend_data],
+        },
+    }
+    
+    # Xác định đường dẫn file output
+    if output_path is None:
+        suffix = "BILINGUAL" if lang.lower() in {"bilingual", "both", "bi"} else ("EN" if lang.lower() == "en" else "VI")
+        output_path = os.path.join(
+            OUTPUT_PATH,
+            f"results_{NOW}_{DURATION}days_{service}_FULL_REPORT_{suffix}.json",
+        )
+    
+    # Ghi file JSON
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(report_data, f, ensure_ascii=False, indent=4)
+    
+    logger.info(f"[EXPORT] Xuất JSON báo cáo RSS thành công ra {output_path}")
+    return output_path
+
+
+def export_full_security_report_html_from_json(
+    json_file_path: str,
+    lang: Optional[str] = None,
+) -> str:
+    """Đọc file JSON báo cáo RSS và xuất ra file HTML.
+    
+    Hàm này đọc dữ liệu từ file JSON đã được xuất bởi `export_rss_report_to_json`
+    và gọi `export_full_security_report_html` để tạo file HTML.
+    
+    Args:
+        json_file_path: Đường dẫn file JSON input
+        lang: Ngôn ngữ output (optional, nếu None sẽ dùng lang từ metadata trong JSON)
+    
+    Returns:
+        Đường dẫn file HTML đã xuất
+    """
+    # Đọc file JSON
+    with open(json_file_path, "r", encoding="utf-8") as f:
+        report_data = json.load(f)
+    
+    # Lấy metadata
+    metadata = report_data.get("metadata", {})
+    service = metadata.get("service", "RSS")
+    output_lang = lang if lang else metadata.get("lang", "bilingual")
+    
+    # Lấy dữ liệu các sections
+    sections = report_data.get("sections", {})
+    global_information_data = sections.get("global_information", [])
+    new_features_samsung_data = sections.get("new_features_samsung", [])
+    new_features_iphone_data = sections.get("new_features_iphone", [])
+    new_features_china_data = sections.get("new_features_china", [])
+    hot_android_issues_data = sections.get("hot_android_issues", [])
+    patent_trend_data = sections.get("patent_trend", [])
+    
+    logger.info(f"[EXPORT] Đọc JSON từ {json_file_path} để xuất HTML")
+    
+    # Gọi hàm xuất HTML
+    return export_full_security_report_html(
+        global_information_data=global_information_data,
+        service=service,
+        new_features_samsung_data=new_features_samsung_data,
+        new_features_iphone_data=new_features_iphone_data,
+        new_features_china_data=new_features_china_data,
+        hot_android_issues_data=hot_android_issues_data,
+        patent_trend_data=patent_trend_data,
+        lang=output_lang,
+    )
